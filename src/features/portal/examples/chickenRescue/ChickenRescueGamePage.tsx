@@ -19,19 +19,18 @@ import {
   GAME_SECONDS,
   hasLiveGame,
 } from "./lib/chickenRescueMachine";
-import { useChickenRescueSession } from "./lib/ChickenRescueSessionContext";
+import { useMinigameSession } from "lib/portal";
 import { GameRunProvider } from "./lib/GameRunContext";
 import { defaultPhaserHandlers } from "./lib/chickenRescuePhaserApi";
 import type { ChickenRescuePhaserApiRef } from "./lib/chickenRescuePhaserApi";
-import { goHome } from "./lib/chickenRescueExit";
+import { closePortal } from "lib/portal";
 import { ChickenRescueGame } from "./ChickenRescueGame";
 import { ChickenRescueHUD } from "./components/ChickenRescueHUD";
 
 export const ChickenRescueGamePage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useAppTranslation();
-  const { minigame, farm, farmId, dispatchAction } =
-    useChickenRescueSession();
+  const { minigame, farm, farmId, dispatchAction } = useMinigameSession();
 
   const scoreRef = useRef(0);
   const [score, setScore] = useState(0);
@@ -62,8 +61,7 @@ export const ChickenRescueGamePage: React.FC = () => {
 
   useLayoutEffect(() => {
     phaserApiRef.current.getScore = () => scoreRef.current;
-    phaserApiRef.current.onChickenRescued = (p) =>
-      setScore((s) => s + p);
+    phaserApiRef.current.onChickenRescued = (p) => setScore((s) => s + p);
     phaserApiRef.current.onGameOver = openResultsModal;
   }, [openResultsModal]);
 
@@ -74,7 +72,7 @@ export const ChickenRescueGamePage: React.FC = () => {
       amounts: { Chook: chooksForScore(final) },
     });
     if (ok) {
-      goHome(navigate);
+      closePortal(navigate);
     }
   }, [dispatchAction]);
 
@@ -101,7 +99,7 @@ export const ChickenRescueGamePage: React.FC = () => {
 
         {runEnd === "results" && (
           <Modal show>
-            <Panel bumpkinParts={NPC_WEARABLES.chicken}>
+            <Panel bumpkinParts={NPC_WEARABLES.grubnuk}>
               <div className="p-1">
                 <div className="w-full flex justify-between items-start mb-2">
                   <Label type="success" icon={SUNNYSIDE.icons.confirm}>
@@ -109,7 +107,10 @@ export const ChickenRescueGamePage: React.FC = () => {
                   </Label>
                 </div>
                 <p className="text-sm mb-2">
-                  {`Congratulations! You rescued ${score} chicken${score === 1 ? "" : "s"} and earned ${chooksEarned} Chook${chooksEarned === 1 ? "" : "s"}.`}
+                  {t("minigame.chickenRescueRunComplete", {
+                    rescued: score,
+                    earned: chooksEarned,
+                  })}
                 </p>
               </div>
               <Button className="mt-1 w-full" onClick={onClaim}>

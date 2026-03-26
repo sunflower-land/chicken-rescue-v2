@@ -1,13 +1,17 @@
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 
-import { PortalProvider } from "./lib/PortalProvider";
+import { PortalProvider } from "lib/portal";
+import { CHICKEN_RESCUE_CLIENT_ACTIONS } from "./lib/chickenRescueClientActions";
 import { ChickenRescueRoutes } from "./ChickenRescueRoutes";
 
 export const ChickenRescueApp: React.FC = () => {
   return (
     <BrowserRouter>
-      <PortalProvider>
+      <PortalProvider
+        offlineActions={CHICKEN_RESCUE_CLIENT_ACTIONS}
+        bootstrapAction="CLAIM_FREE_ATTEMPTS"
+      >
         <ChickenRescueRoutes />
       </PortalProvider>
     </BrowserRouter>

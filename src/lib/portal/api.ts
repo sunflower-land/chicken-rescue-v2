@@ -1,28 +1,5 @@
-import { getUrl } from "features/portal/actions/loadPortal";
-
-export type MinigameSessionResponse = {
-  farm: {
-    balance: string;
-    bumpkin?: unknown;
-  };
-  minigame: {
-    balances: Record<string, number>;
-    producing: Record<
-      string,
-      { outputToken: string; startedAt: number; completesAt: number }
-    >;
-    activity: number;
-    dailyActivity: { date: string; count: number };
-    /** Present when API returns the extended minigame payload. */
-    dailyMinted?: { utcDay: string; minted: Record<string, number> };
-  };
-  actions: Record<string, unknown>;
-};
-
-export type MinigameActionResponse = {
-  minigame: MinigameSessionResponse["minigame"];
-  producingId?: string;
-};
+import type { MinigameSessionResponse, MinigameActionResponse } from "./types";
+import { getUrl } from "./url";
 
 export async function getMinigameSession({
   portalId,
@@ -36,16 +13,13 @@ export async function getMinigameSession({
     throw new Error("No API URL");
   }
 
-  const response = await window.fetch(
-    `${base}/portal/${portalId}/minigame`,
-    {
-      method: "GET",
-      headers: {
-        "content-type": "application/json;charset=UTF-8",
-        Authorization: `Bearer ${token}`,
-      },
+  const response = await window.fetch(`${base}/portal/${portalId}/minigame`, {
+    method: "GET",
+    headers: {
+      "content-type": "application/json;charset=UTF-8",
+      Authorization: `Bearer ${token}`,
     },
-  );
+  });
 
   if (response.status >= 400) {
     const text = await response.text();

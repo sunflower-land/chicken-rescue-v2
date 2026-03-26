@@ -39,7 +39,9 @@ export const ChickenRescueHUD: React.FC = () => {
               paddingLeft: "3px",
             }}
           >
-            <span className="balance-text">{`Chickens: ${score}`}</span>
+            <span className="balance-text">
+              {t("minigame.chooksScoreHud", { count: score })}
+            </span>
           </div>
         </div>
       </div>

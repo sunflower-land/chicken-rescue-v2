@@ -4966,6 +4966,9 @@ const minigame: Record<Minigame, string> = {
   "minigame.coopWeight": ENGLISH_TERMS["minigame.coopWeight"],
   "minigame.feedChook": ENGLISH_TERMS["minigame.feedChook"],
   "minigame.feedChookCosts": ENGLISH_TERMS["minigame.feedChookCosts"],
+  "minigame.chooksScoreHud": ENGLISH_TERMS["minigame.chooksScoreHud"],
+  "minigame.chickenRescueRunComplete":
+    ENGLISH_TERMS["minigame.chickenRescueRunComplete"],
   "minigame.collectNugget": ENGLISH_TERMS["minigame.collectNugget"],
   "minigame.nuggetReady": ENGLISH_TERMS["minigame.nuggetReady"],
   "minigame.nuggetCooking": ENGLISH_TERMS["minigame.nuggetCooking"],

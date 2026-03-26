@@ -5633,14 +5633,14 @@ const greenhouse: Record<GreenhouseKeys, string> = {
 };
 
 const minigame: Record<Minigame, string> = {
-  "minigame.chickenRescue": "Minigame - Chicken Rescue",
+  "minigame.chickenRescue": ENGLISH_TERMS["minigame.chickenRescue"],
   "minigame.comingSoon": "Coming soon...",
   "minigame.completed": "Completed",
   "minigame.confirm": "Are you sure you want to spend the following:",
   "minigame.noPrizeAvailable": "No daily prize available",
   "minigame.playNow": "Play now",
   "minigame.purchase": "Purchase",
-  "minigame.chickenRescueHelp": "Can you help me rescue the chickens?",
+  "minigame.chickenRescueHelp": ENGLISH_TERMS["minigame.chickenRescueHelp"],
   "minigame.discovered.one": "Howdy Bumpkin, you've discovered a portal!",
   "minigame.discovered.two":
     "Step into the magical realm to earn rewards and glory. Good luck!",
@@ -5670,6 +5670,9 @@ const minigame: Record<Minigame, string> = {
   "minigame.coopWeight": ENGLISH_TERMS["minigame.coopWeight"],
   "minigame.feedChook": ENGLISH_TERMS["minigame.feedChook"],
   "minigame.feedChookCosts": ENGLISH_TERMS["minigame.feedChookCosts"],
+  "minigame.chooksScoreHud": ENGLISH_TERMS["minigame.chooksScoreHud"],
+  "minigame.chickenRescueRunComplete":
+    ENGLISH_TERMS["minigame.chickenRescueRunComplete"],
   "minigame.collectNugget": ENGLISH_TERMS["minigame.collectNugget"],
   "minigame.nuggetReady": ENGLISH_TERMS["minigame.nuggetReady"],
   "minigame.nuggetCooking": ENGLISH_TERMS["minigame.nuggetCooking"],

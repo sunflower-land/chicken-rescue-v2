@@ -1,4 +1,4 @@
-import type { MinigameActionDefinition } from "./minigameProcessAction";
+import type { MinigameActionDefinition } from "lib/portal";
 
 /**
  * Mirrors sunflower-land-api `CHICKEN_RESCUE_CONFIG.actions` for offline / no-API play.

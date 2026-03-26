@@ -7,8 +7,8 @@ import { Label } from "components/ui/Label";
 import { Loading } from "features/auth/components/Loading";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { CONFIG } from "lib/config";
-import { goHome } from "./chickenRescueExit";
-import type { BootstrapInterpreter } from "./portalBootstrapMachine";
+import { closePortal } from "./exit";
+import type { BootstrapInterpreter } from "./bootstrapMachine";
 
 export const BootstrapShell: React.FC<{
   bootstrapService: BootstrapInterpreter;
@@ -40,7 +40,7 @@ export const BootstrapShell: React.FC<{
             <Label type="danger">{t("error")}</Label>
             <span className="text-sm my-2">{t("session.expired")}</span>
           </div>
-          <Button onClick={() => goHome()}>{t("close")}</Button>
+          <Button onClick={() => closePortal()}>{t("close")}</Button>
         </Panel>
       </Modal>
     );

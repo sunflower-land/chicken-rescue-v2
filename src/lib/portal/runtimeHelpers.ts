@@ -1,4 +1,4 @@
-import type { MinigameSessionResponse } from "features/portal/actions/minigameEconomy";
+import type { MinigameSessionResponse } from "./types";
 import {
   emptyMinigameState,
   processMinigameAction,
@@ -6,7 +6,7 @@ import {
   type MinigameConfig,
   type MinigameRuntimeState,
   utcCalendarDay,
-} from "./minigameProcessAction";
+} from "./processAction";
 
 export function cloneMinigameSnapshot(
   m: MinigameSessionResponse["minigame"],
@@ -103,6 +103,8 @@ export function applyOptimisticPortalAction(
   return { ok: true, minigame: runtimeToMinigameSession(result.state) };
 }
 
-export function emptySessionMinigame(now = Date.now()): MinigameSessionResponse["minigame"] {
+export function emptySessionMinigame(
+  now = Date.now(),
+): MinigameSessionResponse["minigame"] {
   return runtimeToMinigameSession(emptyMinigameState(now));
 }

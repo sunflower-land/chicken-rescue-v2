@@ -6,7 +6,7 @@ import chookIcon from "assets/icons/chook.webp";
 import chickenNuggetIcon from "assets/icons/chicken_nugget.webp";
 import cluckCoinIcon from "assets/icons/cluck_coin.webp";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { useChickenRescueSession } from "../lib/ChickenRescueSessionContext";
+import { useMinigameSession } from "lib/portal";
 
 type Props = {
   onOpenShop: () => void;
@@ -14,7 +14,7 @@ type Props = {
 
 export const ChickenRescueHomeHUD: React.FC<Props> = ({ onOpenShop }) => {
   const { t } = useAppTranslation();
-  const { minigame } = useChickenRescueSession();
+  const { minigame } = useMinigameSession();
 
   const chooks = minigame.balances.Chook ?? 0;
   const cluckcoin = minigame.balances.Cluckcoin ?? 0;

@@ -1,17 +1,42 @@
 /**
  * Browser port of sunflower-land-api `domain/minigames/processAction.ts`
- * for optimistic Chicken Rescue updates (must stay in sync with server).
+ * (and `types.ts` rule shapes) for optimistic minigame updates — keep in sync with server.
  */
 
 export type MintRuleFixed = { amount: number };
 export type MintRuleFixedDailyCapped = { amount: number; dailyCap: number };
 export type MintRuleRanged = { min: number; max: number; dailyCap: number };
-export type MintRule = MintRuleFixed | MintRuleFixedDailyCapped | MintRuleRanged;
+export type MintRule =
+  | MintRuleFixed
+  | MintRuleFixedDailyCapped
+  | MintRuleRanged;
 export type BurnRule = { amount: number };
-export type ProduceRule = { msToComplete: number; limit: number };
+
+/** Minimum balance; tokens are not consumed (unlike {@link BurnRule}). */
+export type RequireRule = { amount: number };
+
+export type ProduceRule = {
+  msToComplete: number;
+  limit: number;
+  /**
+   * When set, count of active jobs with this `outputToken` must stay **below**
+   * `balances[capByBalance]` before a new job can start (e.g. Kale timers ≤ GiantKale count).
+   */
+  capByBalance?: string;
+};
+
 export type CollectRule = { amount: number };
 
 export type MinigameActionDefinition = {
+  /** Minimum balances; checked before burn; does not remove tokens. */
+  require?: Record<string, RequireRule>;
+  /**
+   * Each listed token must have balance **strictly less than** the given number
+   * (missing balance counts as 0). Useful for caps (e.g. Giant Kale count < 10).
+   */
+  requireBelow?: Record<string, number>;
+  /** Each listed token must have balance 0 (or absent). */
+  requireAbsent?: string[];
   mint?: Record<string, MintRule>;
   burn?: Record<string, BurnRule>;
   produce?: Record<string, ProduceRule>;
@@ -61,7 +86,9 @@ export type MinigameProcessSuccess = {
 
 export type MinigameProcessFailure = { ok: false; error: string };
 
-export type MinigameProcessResult = MinigameProcessSuccess | MinigameProcessFailure;
+export type MinigameProcessResult =
+  | MinigameProcessSuccess
+  | MinigameProcessFailure;
 
 function newProducingId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -105,10 +132,7 @@ function cloneState(state: MinigameRuntimeState): MinigameRuntimeState {
   return {
     balances: { ...state.balances },
     producing: Object.fromEntries(
-      Object.entries(state.producing).map(([id, entry]) => [
-        id,
-        { ...entry },
-      ]),
+      Object.entries(state.producing).map(([id, entry]) => [id, { ...entry }]),
     ),
     dailyMinted: {
       utcDay: state.dailyMinted.utcDay,
@@ -140,6 +164,45 @@ function recordSuccessfulMinigameAction(
 
 function getBalance(balances: Record<string, number>, token: string): number {
   return balances[token] ?? 0;
+}
+
+function applyRequire(
+  balances: Record<string, number>,
+  require: Record<string, RequireRule> | undefined,
+): string | undefined {
+  if (!require) return undefined;
+  for (const [token, rule] of Object.entries(require)) {
+    if (getBalance(balances, token) < rule.amount) {
+      return `Requires at least ${rule.amount} ${token}`;
+    }
+  }
+  return undefined;
+}
+
+function applyRequireBelow(
+  balances: Record<string, number>,
+  requireBelow: Record<string, number> | undefined,
+): string | undefined {
+  if (!requireBelow) return undefined;
+  for (const [token, maxExclusive] of Object.entries(requireBelow)) {
+    if (getBalance(balances, token) >= maxExclusive) {
+      return `${token} is at or above the allowed maximum`;
+    }
+  }
+  return undefined;
+}
+
+function applyRequireAbsent(
+  balances: Record<string, number>,
+  absent: string[] | undefined,
+): string | undefined {
+  if (!absent?.length) return undefined;
+  for (const token of absent) {
+    if (getBalance(balances, token) > 0) {
+      return `${token} already acquired`;
+    }
+  }
+  return undefined;
 }
 
 function applyBurns(
@@ -175,6 +238,14 @@ function applyProduce(
     ).length;
     if (active >= rule.limit) {
       return { error: `Production limit reached for ${outputToken}` };
+    }
+    if (rule.capByBalance !== undefined) {
+      const cap = getBalance(balances, rule.capByBalance);
+      if (active >= cap) {
+        return {
+          error: `Not enough ${rule.capByBalance} capacity for new ${outputToken} production`,
+        };
+      }
     }
     const id = newProducingId();
     producing[id] = {
@@ -265,6 +336,15 @@ function runPhases(
   input: MinigameProcessInput,
   working: MinigameRuntimeState,
 ): { error?: string; producingId?: string } {
+  const errRequire = applyRequire(working.balances, def.require);
+  if (errRequire) return { error: errRequire };
+
+  const errBelow = applyRequireBelow(working.balances, def.requireBelow);
+  if (errBelow) return { error: errBelow };
+
+  const errAbsent = applyRequireAbsent(working.balances, def.requireAbsent);
+  if (errAbsent) return { error: errAbsent };
+
   const errBurn = applyBurns(working.balances, def.burn);
   if (errBurn) return { error: errBurn };
 
@@ -320,7 +400,9 @@ export function processMinigameAction(
   return { ok: true, state: working, producingId };
 }
 
-export function emptyMinigameState(now: number = Date.now()): MinigameRuntimeState {
+export function emptyMinigameState(
+  now: number = Date.now(),
+): MinigameRuntimeState {
   const day = utcCalendarDay(now);
   return {
     balances: {},

@@ -5639,7 +5639,8 @@ const minigame: Record<Minigame, string> = {
   "minigame.noPrizeAvailable": "No daily prize available",
   "minigame.playNow": "Play now",
   "minigame.purchase": "Purchase",
-  "minigame.chickenRescueHelp": "Can you help me rescue the chickens?",
+  "minigame.chickenRescueHelp":
+    "Rescue chooks from the paddock for the hungry goblin. Each run earns Chooks you can spend back home.",
   "minigame.discovered.one": "Howdy Bumpkin, you've discovered a portal!",
   "minigame.discovered.two":
     "Step into the magical realm to earn rewards and glory. Good luck!",
@@ -5662,13 +5663,16 @@ const minigame: Record<Minigame, string> = {
   "minigame.missionComplete": "Mission complete",
   "minigame.missionFailed": "Mission failed",
   "minigame.attemptsRemaining": "attempts left",
-  "minigame.coop": "Coop",
+  "minigame.coop": "Hungry goblin",
   "minigame.coopChooks": "Chooks: {{count}}",
   "minigame.coopNuggets": "Nuggets: {{count}}",
-  "minigame.coopWeight": "Chicken weight: {{count}}",
-  "minigame.feedChook": "Feed chook",
+  "minigame.coopWeight": "Feed stock: {{count}}",
+  "minigame.feedChook": "Feed goblin",
   "minigame.feedChookCosts":
-    "Costs 50 Chooks and 1 chicken weight. Produces a nugget after a short wait.",
+    "Costs 50 Chooks and 1 feed stock. The goblin will cook up a nugget after a short wait.",
+  "minigame.chooksScoreHud": "Chooks: {{count}}",
+  "minigame.chickenRescueRunComplete":
+    "Congratulations! You rescued {{rescued}} chooks and earned {{earned}} Chooks for the hungry goblin.",
   "minigame.collectNugget": "Collect nugget",
   "minigame.nuggetReady": "Your nugget is ready to collect.",
   "minigame.nuggetCooking": "Cooking… {{seconds}}s left",

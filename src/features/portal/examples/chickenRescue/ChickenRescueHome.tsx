@@ -18,9 +18,8 @@ import {
   nuggetCookProgressPercent,
   useNowTicker,
 } from "./lib/chickenRescueNugget";
-import { useChickenRescueSession } from "./lib/ChickenRescueSessionContext";
+import { useMinigameSession, closePortal } from "lib/portal";
 import { CluckcoinShopModal } from "./components/CluckcoinShopModal";
-import { goHome } from "./lib/chickenRescueExit";
 import { ChickenRescueHomeHUD } from "./components/ChickenRescueHomeHUD";
 import {
   ChickenRescueRules,
@@ -32,7 +31,7 @@ import { ChickenRescueHungryGoblinNpc } from "./components/ChickenRescueHungryGo
 export const ChickenRescueHome: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useAppTranslation();
-  const { minigame, dispatchAction, clearApiError } = useChickenRescueSession();
+  const { minigame, dispatchAction, clearApiError } = useMinigameSession();
   const now = useNowTicker();
 
   const [playModalOpen, setPlayModalOpen] = useState(false);
@@ -136,7 +135,7 @@ export const ChickenRescueHome: React.FC = () => {
 
       {playModalOpen && attemptsLeft > 0 && (
         <Modal show>
-          <Panel bumpkinParts={NPC_WEARABLES.chicken}>
+          <Panel bumpkinParts={NPC_WEARABLES.grubnuk}>
             <ChickenRescueRules
               attemptsLeft={attemptsLeft}
               onAcknowledged={startRun}
@@ -168,7 +167,7 @@ export const ChickenRescueHome: React.FC = () => {
               <MinigameAttempts attemptsLeft={attemptsLeft} />
             </div>
             <div className="flex flex-wrap gap-1 mt-2">
-              <Button onClick={() => goHome(navigate)} className="mr-1">
+              <Button onClick={() => closePortal(navigate)} className="mr-1">
                 {t("exit")}
               </Button>
               <Button

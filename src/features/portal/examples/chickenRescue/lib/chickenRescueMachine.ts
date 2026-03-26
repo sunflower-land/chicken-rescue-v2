@@ -1,4 +1,4 @@
-import { MinigameSessionResponse } from "features/portal/actions/minigameEconomy";
+import type { MinigameSessionResponse } from "lib/portal";
 
 export function attemptsFromMinigame(
   minigame: MinigameSessionResponse["minigame"],

@@ -6,14 +6,15 @@ import React, {
   useState,
 } from "react";
 import { CONFIG } from "lib/config";
-import { getUrl } from "features/portal/actions/loadPortal";
-import { MinigameSessionResponse, postMinigameAction } from "features/portal/actions/minigameEconomy";
-import type { BootstrapContext } from "./portalBootstrapMachine";
+import { getUrl } from "./url";
+import type { MinigameSessionResponse } from "./types";
+import { postMinigameAction } from "./api";
+import type { BootstrapContext } from "./bootstrapMachine";
 import {
   applyOptimisticPortalAction,
   cloneMinigameSnapshot,
   normalizeMinigameFromApi,
-} from "./minigameRuntimeHelpers";
+} from "./runtimeHelpers";
 
 export type DispatchMinigameActionInput = {
   action: string;
@@ -21,7 +22,7 @@ export type DispatchMinigameActionInput = {
   itemId?: string;
 };
 
-export type ChickenRescueSessionValue = {
+export type MinigameSessionValue = {
   farmId: number;
   jwt: string;
   farm: MinigameSessionResponse["farm"];
@@ -32,19 +33,17 @@ export type ChickenRescueSessionValue = {
   clearApiError: () => void;
 };
 
-const ChickenRescueSessionContext = createContext<ChickenRescueSessionValue | null>(
-  null,
-);
+const MinigameSessionContext = createContext<MinigameSessionValue | null>(null);
 
-export function useChickenRescueSession(): ChickenRescueSessionValue {
-  const v = useContext(ChickenRescueSessionContext);
+export function useMinigameSession(): MinigameSessionValue {
+  const v = useContext(MinigameSessionContext);
   if (!v) {
-    throw new Error("useChickenRescueSession outside provider");
+    throw new Error("useMinigameSession outside provider");
   }
   return v;
 }
 
-export function ChickenRescueSessionProvider({
+export function MinigameSessionProvider({
   bootstrap,
   children,
 }: {
@@ -60,15 +59,11 @@ export function ChickenRescueSessionProvider({
     (input: DispatchMinigameActionInput): boolean => {
       setApiError(null);
       const rollback = cloneMinigameSnapshot(minigame);
-      const next = applyOptimisticPortalAction(
-        bootstrap.actions,
-        minigame,
-        {
-          actionId: input.action,
-          amounts: input.amounts,
-          itemId: input.itemId,
-        },
-      );
+      const next = applyOptimisticPortalAction(bootstrap.actions, minigame, {
+        actionId: input.action,
+        amounts: input.amounts,
+        itemId: input.itemId,
+      });
       if (!next.ok) {
         return false;
       }
@@ -101,7 +96,7 @@ export function ChickenRescueSessionProvider({
   const clearApiError = useCallback(() => setApiError(null), []);
 
   const value = useMemo(
-    (): ChickenRescueSessionValue => ({
+    (): MinigameSessionValue => ({
       farmId: bootstrap.id,
       jwt: bootstrap.jwt as string,
       farm: bootstrap.farm,
@@ -124,8 +119,8 @@ export function ChickenRescueSessionProvider({
   );
 
   return (
-    <ChickenRescueSessionContext.Provider value={value}>
+    <MinigameSessionContext.Provider value={value}>
       {children}
-    </ChickenRescueSessionContext.Provider>
+    </MinigameSessionContext.Provider>
   );
 }

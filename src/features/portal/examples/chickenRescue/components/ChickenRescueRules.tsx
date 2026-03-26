@@ -1,6 +1,6 @@
 import React from "react";
 
-import factions from "assets/icons/factions.webp";
+import { SUNNYSIDE } from "assets/sunnyside";
 import { Button } from "components/ui/Button";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { Label } from "components/ui/Label";
@@ -38,7 +38,7 @@ export const ChickenRescueRules: React.FC<Props> = ({
     <>
       <div>
         <div className="w-full relative flex justify-between p-1 items-center mb-2">
-          <Label type="default" icon={factions}>
+          <Label type="default" icon={SUNNYSIDE.npcs.goblinHead}>
             {t("minigame.chickenRescue")}
           </Label>
           <MinigameAttempts attemptsLeft={attemptsLeft} />

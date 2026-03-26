@@ -4,7 +4,7 @@ import { Panel } from "components/ui/Panel";
 import { Button } from "components/ui/Button";
 import { Label } from "components/ui/Label";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { useChickenRescueSession } from "../lib/ChickenRescueSessionContext";
+import { useMinigameSession } from "lib/portal";
 import { openCluckcoinMarketplace } from "../lib/chickenRescueCluckcoinMarketplace";
 import cluckCoinIcon from "assets/icons/cluck_coin.webp";
 
@@ -16,7 +16,7 @@ type Props = {
 export const CluckcoinShopModal: React.FC<Props> = ({ show, onClose }) => {
   const { t } = useAppTranslation();
   const { minigame, dispatchAction, apiError, clearApiError } =
-    useChickenRescueSession();
+    useMinigameSession();
 
   const nuggets = minigame.balances.Nugget ?? 0;
   const canSwapNugget = nuggets >= 1;

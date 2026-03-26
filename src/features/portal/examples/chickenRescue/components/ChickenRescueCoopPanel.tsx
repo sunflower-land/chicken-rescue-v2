@@ -4,11 +4,8 @@ import { Button } from "components/ui/Button";
 import { Label } from "components/ui/Label";
 import { SUNNYSIDE } from "assets/sunnyside";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { useChickenRescueSession } from "../lib/ChickenRescueSessionContext";
-import {
-  findNuggetJob,
-  useNowTicker,
-} from "../lib/chickenRescueNugget";
+import { useMinigameSession } from "lib/portal";
+import { findNuggetJob, useNowTicker } from "../lib/chickenRescueNugget";
 
 const CHOOK_FEED_COST = 50;
 const WEIGHT_TOKEN = "ChickenWeigth" as const;
@@ -20,7 +17,7 @@ type Props = {
 export const ChickenRescueCoopPanel: React.FC<Props> = ({ onClose }) => {
   const { t } = useAppTranslation();
   const { minigame, dispatchAction, apiError, clearApiError } =
-    useChickenRescueSession();
+    useMinigameSession();
   const now = useNowTicker();
 
   const chooks = minigame.balances.Chook ?? 0;
@@ -29,12 +26,8 @@ export const ChickenRescueCoopPanel: React.FC<Props> = ({ onClose }) => {
 
   const nuggetJob = findNuggetJob(minigame.producing);
 
-  const canFeed =
-    chooks >= CHOOK_FEED_COST &&
-    weight >= 1 &&
-    !nuggetJob;
-  const nuggetReady =
-    nuggetJob !== null && now >= nuggetJob.completesAt;
+  const canFeed = chooks >= CHOOK_FEED_COST && weight >= 1 && !nuggetJob;
+  const nuggetReady = nuggetJob !== null && now >= nuggetJob.completesAt;
 
   const secondsLeft =
     nuggetJob && !nuggetReady
@@ -60,22 +53,16 @@ export const ChickenRescueCoopPanel: React.FC<Props> = ({ onClose }) => {
       <Panel className="relative">
         <div className="p-2">
           <div className="flex items-center justify-between gap-2 mb-2">
-            <Label type="default" icon={SUNNYSIDE.resource.chicken}>
+            <Label type="default" icon={SUNNYSIDE.npcs.goblinHead}>
               {t("minigame.coop")}
             </Label>
           </div>
 
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-neutral-700 dark:text-neutral-200 mb-3">
-            <span>
-              {t("minigame.coopChooks", { count: chooks })}
-            </span>
-            <span>
-              {t("minigame.coopNuggets", { count: nuggets })}
-            </span>
+            <span>{t("minigame.coopChooks", { count: chooks })}</span>
+            <span>{t("minigame.coopNuggets", { count: nuggets })}</span>
             {weight > 0 && (
-              <span>
-                {t("minigame.coopWeight", { count: weight })}
-              </span>
+              <span>{t("minigame.coopWeight", { count: weight })}</span>
             )}
           </div>
 
@@ -84,11 +71,7 @@ export const ChickenRescueCoopPanel: React.FC<Props> = ({ onClose }) => {
           </p>
 
           <div className="flex flex-col gap-2">
-            <Button
-              onClick={onFeed}
-              disabled={!canFeed}
-              className="w-full"
-            >
+            <Button onClick={onFeed} disabled={!canFeed} className="w-full">
               {t("minigame.feedChook")}
             </Button>
 

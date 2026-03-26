@@ -5,12 +5,12 @@ import { Panel } from "components/ui/Panel";
 import { Button } from "components/ui/Button";
 import { Label } from "components/ui/Label";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
-import { useChickenRescueSession } from "./lib/ChickenRescueSessionContext";
+import { useMinigameSession } from "lib/portal";
 import { ChickenRescueHome } from "./ChickenRescueHome";
 import { ChickenRescueGamePage } from "./ChickenRescueGamePage";
 
 const ApiErrorModal: React.FC = () => {
-  const { apiError, clearApiError } = useChickenRescueSession();
+  const { apiError, clearApiError } = useMinigameSession();
   const { t } = useAppTranslation();
 
   if (!apiError) {
