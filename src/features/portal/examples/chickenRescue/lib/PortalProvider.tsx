@@ -1,44 +1,40 @@
-import React, { useEffect } from "react";
-import { useInterpret } from "@xstate/react";
-import { MachineInterpreter, portalMachine } from "./chickenRescueMachine";
+import React from "react";
+import { useActor, useInterpret } from "@xstate/react";
+import {
+  portalBootstrapMachine,
+  type BootstrapInterpreter,
+} from "./portalBootstrapMachine";
+import { BootstrapShell } from "./BootstrapShell";
+import { ChickenRescueSessionProvider } from "./ChickenRescueSessionContext";
 
-interface PortalContext {
-  portalService: MachineInterpreter;
-}
+/** Legacy name: bootstrap service only (session load). */
+export type PortalContextBootstrap = {
+  bootstrapService: BootstrapInterpreter;
+};
 
-export const PortalContext = React.createContext<PortalContext>(
-  {} as PortalContext,
+export const PortalBootstrapContext = React.createContext<PortalContextBootstrap>(
+  {} as PortalContextBootstrap,
 );
 
-export const PortalProvider: React.FC = ({ children }) => {
-  const portalService = useInterpret(
-    portalMachine,
-  ) as unknown as MachineInterpreter;
+export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const bootstrapService = useInterpret(portalBootstrapMachine) as unknown as BootstrapInterpreter;
+  const [state] = useActor(bootstrapService);
 
-  /**
-   * Below is how we can listen to messages from the parent window
-   */
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      // Handle the received message
-      if (event.data.event === "purchased") {
-        // Put in your handlers here
-        portalService.send("PURCHASED");
-      }
-    };
-
-    // Add event listener to listen for messages from the parent window
-    window.addEventListener("message", handleMessage);
-
-    // Clean up the event listener when component unmounts
-    return () => {
-      window.removeEventListener("message", handleMessage);
-    };
-  }, []);
+  if (!state.matches("sessionReady")) {
+    return (
+      <PortalBootstrapContext.Provider value={{ bootstrapService }}>
+        <BootstrapShell bootstrapService={bootstrapService} />
+      </PortalBootstrapContext.Provider>
+    );
+  }
 
   return (
-    <PortalContext.Provider value={{ portalService }}>
-      {children}
-    </PortalContext.Provider>
+    <PortalBootstrapContext.Provider value={{ bootstrapService }}>
+      <ChickenRescueSessionProvider bootstrap={state.context}>
+        {children}
+      </ChickenRescueSessionProvider>
+    </PortalBootstrapContext.Provider>
   );
 };

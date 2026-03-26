@@ -3836,7 +3836,24 @@ export type Minigame =
   | "minigame.missionComplete"
   | "minigame.missionFailed"
   | "minigame.chickenRescueHelp"
-  | "minigame.attemptsRemaining";
+  | "minigame.attemptsRemaining"
+  | "minigame.coop"
+  | "minigame.coopChooks"
+  | "minigame.coopNuggets"
+  | "minigame.coopWeight"
+  | "minigame.feedChook"
+  | "minigame.feedChookCosts"
+  | "minigame.collectNugget"
+  | "minigame.nuggetReady"
+  | "minigame.nuggetCooking"
+  | "minigame.cluckcoinMarketplaceTitle"
+  | "minigame.cluckcoinMarketplaceDescription"
+  | "minigame.cluckcoinLimitedSwap"
+  | "minigame.swapNuggetForCluckcoin"
+  | "minigame.continueToMarketplace"
+  | "minigame.spendCluckcoinForAttempt"
+  | "minigame.cluckcoinBalanceForUnlock"
+  | "minigame.getCluckcoinOnMarketplace";
 
 export type KitchenKeys = "kitchen.oilRemaining";
 

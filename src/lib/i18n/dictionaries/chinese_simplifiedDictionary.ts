@@ -4960,6 +4960,31 @@ const minigame: Record<Minigame, string> = {
   "minigame.missionComplete": ENGLISH_TERMS["minigame.missionComplete"],
   "minigame.missionFailed": ENGLISH_TERMS["minigame.missionFailed"],
   "minigame.attemptsRemaining": ENGLISH_TERMS["minigame.attemptsRemaining"],
+  "minigame.coop": ENGLISH_TERMS["minigame.coop"],
+  "minigame.coopChooks": ENGLISH_TERMS["minigame.coopChooks"],
+  "minigame.coopNuggets": ENGLISH_TERMS["minigame.coopNuggets"],
+  "minigame.coopWeight": ENGLISH_TERMS["minigame.coopWeight"],
+  "minigame.feedChook": ENGLISH_TERMS["minigame.feedChook"],
+  "minigame.feedChookCosts": ENGLISH_TERMS["minigame.feedChookCosts"],
+  "minigame.collectNugget": ENGLISH_TERMS["minigame.collectNugget"],
+  "minigame.nuggetReady": ENGLISH_TERMS["minigame.nuggetReady"],
+  "minigame.nuggetCooking": ENGLISH_TERMS["minigame.nuggetCooking"],
+  "minigame.cluckcoinMarketplaceTitle":
+    ENGLISH_TERMS["minigame.cluckcoinMarketplaceTitle"],
+  "minigame.cluckcoinLimitedSwap":
+    ENGLISH_TERMS["minigame.cluckcoinLimitedSwap"],
+  "minigame.cluckcoinMarketplaceDescription":
+    ENGLISH_TERMS["minigame.cluckcoinMarketplaceDescription"],
+  "minigame.swapNuggetForCluckcoin":
+    ENGLISH_TERMS["minigame.swapNuggetForCluckcoin"],
+  "minigame.continueToMarketplace":
+    ENGLISH_TERMS["minigame.continueToMarketplace"],
+  "minigame.spendCluckcoinForAttempt":
+    ENGLISH_TERMS["minigame.spendCluckcoinForAttempt"],
+  "minigame.cluckcoinBalanceForUnlock":
+    ENGLISH_TERMS["minigame.cluckcoinBalanceForUnlock"],
+  "minigame.getCluckcoinOnMarketplace":
+    ENGLISH_TERMS["minigame.getCluckcoinOnMarketplace"],
 };
 
 export const easterEggTerms: Record<EasterEggKeys, string> = {

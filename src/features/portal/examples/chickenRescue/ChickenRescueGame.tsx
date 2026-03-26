@@ -1,19 +1,19 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Game, AUTO } from "phaser";
 import NinePatchPlugin from "phaser3-rex-plugins/plugins/ninepatch-plugin.js";
 import VirtualJoystickPlugin from "phaser3-rex-plugins/plugins/virtualjoystick-plugin.js";
 
 import { Preloader } from "features/world/scenes/Preloader";
-import { useActor } from "@xstate/react";
+import { GameState } from "features/game/types/game";
 import { ChickenRescueScene } from "./ChickenRescueScene";
-import { PortalContext } from "./lib/PortalProvider";
+import type { ChickenRescuePhaserApiRef } from "./lib/chickenRescuePhaserApi";
 
-export const ChickenRescueGame: React.FC = () => {
-  const { portalService } = useContext(PortalContext);
-  const [portalState] = useActor(portalService);
-
-  const [loaded, setLoaded] = useState(false);
-
+export const ChickenRescueGame: React.FC<{
+  gameState: GameState;
+  farmId: number;
+  phaserApiRef: ChickenRescuePhaserApiRef;
+  onGameReady?: (game: Game) => void;
+}> = ({ gameState, farmId, phaserApiRef, onGameReady }) => {
   const game = useRef<Game>();
 
   const scene = "chicken_rescue";
@@ -68,11 +68,11 @@ export const ChickenRescueGame: React.FC = () => {
     });
 
     game.current.registry.set("initialScene", scene);
-    game.current.registry.set("gameState", portalState.context.state);
-    game.current.registry.set("id", portalState.context.id);
-    game.current.registry.set("portalService", portalService);
+    game.current.registry.set("gameState", gameState);
+    game.current.registry.set("id", farmId);
+    game.current.registry.set("phaserApiRef", phaserApiRef);
 
-    setLoaded(true);
+    onGameReady?.(game.current);
 
     return () => {
       game.current?.destroy(true);

@@ -5662,6 +5662,28 @@ const minigame: Record<Minigame, string> = {
   "minigame.missionComplete": "Mission complete",
   "minigame.missionFailed": "Mission failed",
   "minigame.attemptsRemaining": "attempts left",
+  "minigame.coop": "Coop",
+  "minigame.coopChooks": "Chooks: {{count}}",
+  "minigame.coopNuggets": "Nuggets: {{count}}",
+  "minigame.coopWeight": "Chicken weight: {{count}}",
+  "minigame.feedChook": "Feed chook",
+  "minigame.feedChookCosts":
+    "Costs 50 Chooks and 1 chicken weight. Produces a nugget after a short wait.",
+  "minigame.collectNugget": "Collect nugget",
+  "minigame.nuggetReady": "Your nugget is ready to collect.",
+  "minigame.nuggetCooking": "Cooking… {{seconds}}s left",
+  "minigame.cluckcoinMarketplaceTitle": "Cluckcoin",
+  "minigame.cluckcoinLimitedSwap":
+    "For a limited time you can swap Nuggets for Cluckcoin in this minigame: 1 Nugget = 1 Cluckcoin.",
+  "minigame.cluckcoinMarketplaceDescription":
+    "You can also buy and sell Cluckcoin on the Sunflower Land marketplace with other players.",
+  "minigame.swapNuggetForCluckcoin": "Swap 1 Nugget for 1 Cluckcoin",
+  "minigame.continueToMarketplace": "Continue to marketplace",
+  "minigame.spendCluckcoinForAttempt": "Spend 1 Cluckcoin for 1 attempt",
+  "minigame.cluckcoinBalanceForUnlock":
+    "You have {{count}} Cluckcoin. Spend one to unlock a play attempt.",
+  "minigame.getCluckcoinOnMarketplace":
+    "You need Cluckcoin to buy attempts. Use the + next to Cluckcoin in the top corner to learn how to trade on the marketplace.",
 };
 
 export const easterEggTerms: Record<EasterEggKeys, string> = {

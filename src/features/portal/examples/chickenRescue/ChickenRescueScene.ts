@@ -4,7 +4,7 @@ import { BaseScene, WALKING_SPEED } from "features/world/scenes/BaseScene";
 import { ChickenContainer } from "./ChickenContainer";
 import { Coordinates } from "features/game/expansion/components/MapPlacement";
 import { SQUARE_WIDTH } from "features/game/lib/constants";
-import { MachineInterpreter } from "./lib/chickenRescueMachine";
+import type { ChickenRescuePhaserApiRef } from "./lib/chickenRescuePhaserApi";
 import { SUNNYSIDE } from "assets/sunnyside";
 import {
   BoundingBox,
@@ -15,7 +15,6 @@ import { BumpkinContainer } from "features/world/containers/BumpkinContainer";
 import { SOUNDS } from "assets/sound-effects/soundEffects";
 import { SleepingChickenContainer } from "./SleepingChickenContainer";
 import { isTouchDevice } from "features/world/lib/device";
-import { EventObject } from "xstate";
 
 const DISTANCE = 16;
 
@@ -71,8 +70,10 @@ export class ChickenRescueScene extends BaseScene {
     });
   }
 
-  public get portalService() {
-    return this.registry.get("portalService") as MachineInterpreter | undefined;
+  public get phaserApiRef() {
+    return this.registry.get("phaserApiRef") as
+      | ChickenRescuePhaserApiRef
+      | undefined;
   }
 
   preload() {
@@ -101,7 +102,6 @@ export class ChickenRescueScene extends BaseScene {
     this.load.audio("game_over", SOUNDS.notifications.maze_over);
     this.load.audio("chicken_1", SOUNDS.resources.chicken_1);
     this.load.audio("chicken_2", SOUNDS.resources.chicken_2);
-    this.load.audio("target_reached", "world/target_reached.mp3");
 
     this.load.image("rock", SUNNYSIDE.resource.stone_rock);
     this.load.image("boulder", SUNNYSIDE.resource.boulder);
@@ -271,16 +271,14 @@ export class ChickenRescueScene extends BaseScene {
       }
     }
 
-    const onRetry = (event: EventObject) => {
-      if (event.type === "RETRY") {
-        this.scene.restart();
-      }
+    const onRetry = () => {
+      this.scene.restart();
     };
 
-    this.portalService?.onEvent(onRetry);
+    this.game.events.on("chicken-rescue-retry", onRetry);
 
     this.events.on("shutdown", () => {
-      this.portalService?.off(onRetry);
+      this.game.events.off("chicken-rescue-retry", onRetry);
     });
   }
 
@@ -632,12 +630,6 @@ export class ChickenRescueScene extends BaseScene {
         this.onAddFollower();
 
         chicken?.destroy();
-
-        // play target reached sound if target is reached
-        if (this.target >= 0 && this.score === this.target) {
-          const targetReachedSound = this.sound.add("target_reached");
-          targetReachedSound.play({ volume: 1.0 });
-        }
       },
     );
   }
@@ -748,7 +740,7 @@ export class ChickenRescueScene extends BaseScene {
       this.goblinMover = undefined;
     }
 
-    this.portalService?.send("GAME_OVER");
+    this.phaserApiRef?.current.onGameOver();
 
     this.walkingSpeed = WALKING_SPEED;
   }
@@ -769,9 +761,7 @@ export class ChickenRescueScene extends BaseScene {
 
     this.following[index] = chicken;
 
-    this.portalService?.send("CHICKEN_RESCUED", {
-      points: 1,
-    });
+    this.phaserApiRef?.current.onChickenRescued(1);
 
     this.physics.add.overlap(
       this.currentPlayer as Phaser.GameObjects.GameObject,
@@ -909,15 +899,7 @@ export class ChickenRescueScene extends BaseScene {
   }
 
   get score() {
-    return this.portalService?.state.context.score ?? 0;
-  }
-
-  get target() {
-    return (
-      this.portalService?.state.context.state?.minigames.prizes[
-        "chicken-rescue"
-      ]?.score ?? 0
-    );
+    return this.phaserApiRef?.current.getScore() ?? 0;
   }
 
   chickenSpawnInterval: NodeJS.Timer | undefined;
@@ -926,8 +908,6 @@ export class ChickenRescueScene extends BaseScene {
   goblinSpawnInterval: NodeJS.Timer | undefined;
 
   start() {
-    this.portalService?.send("START");
-
     this.walkAudioController?.handleWalkSound(true);
 
     const body = this.currentPlayer?.body as Phaser.Physics.Arcade.Body;

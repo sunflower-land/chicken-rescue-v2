@@ -56,6 +56,8 @@ export interface BoxProps {
     percentage: number;
     type: ProgressType;
   };
+  /** When true (and `count` is passed), show the count label even for zero. */
+  showCountIfZero?: boolean;
 }
 
 export const Box: React.FC<BoxProps> = ({
@@ -77,6 +79,7 @@ export const Box: React.FC<BoxProps> = ({
   parentDivRef,
   alternateIcon,
   progress,
+  showCountIfZero = false,
 }) => {
   const [isHover, setIsHover] = useState(false);
   const [showHiddenCountLabel, setShowHiddenCountLabel] = useState(false);
@@ -108,7 +111,13 @@ export const Box: React.FC<BoxProps> = ({
     ? longPressEvents
     : { onClick: canClick ? onClick : undefined };
 
-  const showCountLabel = !locked && !hideCount && precisionCount.greaterThan(0);
+  const showCountLabel =
+    !locked &&
+    !hideCount &&
+    count !== undefined &&
+    (showCountIfZero
+      ? precisionCount.greaterThanOrEqualTo(0)
+      : precisionCount.greaterThan(0));
 
   // shift count label position to right if out of parent div or viewport bounds on hover
   // restore count label position when not on hover

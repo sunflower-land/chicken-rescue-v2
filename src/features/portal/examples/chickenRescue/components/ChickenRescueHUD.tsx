@@ -1,72 +1,36 @@
-import React, { useContext } from "react";
-import { useSelector } from "@xstate/react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PIXEL_SCALE } from "features/game/lib/constants";
 import { SUNNYSIDE } from "assets/sunnyside";
 import worldIcon from "assets/icons/world.png";
 import { HudContainer } from "components/ui/HudContainer";
-import { Label } from "components/ui/Label";
-import { t } from "i18next";
+import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { isTouchDevice } from "features/world/lib/device";
-import { PortalMachineState } from "../lib/chickenRescueMachine";
-import { PortalContext } from "../lib/PortalProvider";
-import { goHome } from "features/portal/lib/portalUtil";
-import { formatNumber } from "lib/utils/formatNumber";
-import sflIcon from "assets/icons/sfl.webp";
-
-const _score = (state: PortalMachineState) => state.context.score;
-const _state = (state: PortalMachineState) => state.context.state;
-const _ready = (state: PortalMachineState) => state.matches("ready");
+import { useGameRun } from "../lib/GameRunContext";
 
 export const ChickenRescueHUD: React.FC = () => {
-  const { portalService } = useContext(PortalContext);
+  const { score } = useGameRun();
+  const navigate = useNavigate();
+  const { t } = useAppTranslation();
 
-  const travelHome = () => {
-    goHome();
-  };
+  const [showMoveHint, setShowMoveHint] = useState(true);
 
-  const state = useSelector(portalService, _state);
-  const score = useSelector(portalService, _score);
-  const ready = useSelector(portalService, _ready);
+  useEffect(() => {
+    if (score > 0) {
+      setShowMoveHint(false);
+    }
+  }, [score]);
 
-  const target = state.minigames.prizes["chicken-rescue"]?.score ?? 0;
-
-  const isTargetReached = score >= target;
+  useEffect(() => {
+    const id = window.setTimeout(() => setShowMoveHint(false), 5000);
+    return () => window.clearTimeout(id);
+  }, []);
 
   return (
     <HudContainer>
-      {/* SFL balance */}
-      <div className="flex flex-col absolute space-y-1 items-end z-50 right-3 top-3 !text-[28px] text-stroke pointer-events-none">
-        <div className="flex items-center space-x-2 relative">
-          <div className="h-9 w-full bg-black opacity-25 absolute sfl-hud-backdrop" />
-          <span className="balance-text">
-            {formatNumber(state.balance, { decimalPlaces: 4 })}
-          </span>
-          <img
-            src={sflIcon}
-            alt="SFL"
-            style={{
-              width: 26,
-            }}
-          />
-        </div>
-      </div>
-
-      {/* target and score */}
       <div className="absolute top-4 left-4 pointer-events-none">
-        {!!target && (
-          <Label
-            icon={SUNNYSIDE.resource.chicken}
-            secondaryIcon={
-              isTargetReached ? SUNNYSIDE.icons.confirm : undefined
-            }
-            type={isTargetReached ? "success" : "vibrant"}
-          >
-            {`Target: ${target}`}
-          </Label>
-        )}
         <div className="relative">
           <div className="h-6 w-full bg-black opacity-30 absolute coins-bb-hud-backdrop-reverse" />
-          {/* Coins */}
           <div
             className="flex items-center space-x-2 z-10 absolute"
             style={{
@@ -75,12 +39,11 @@ export const ChickenRescueHUD: React.FC = () => {
               paddingLeft: "3px",
             }}
           >
-            <span className="balance-text">{`Score: ${score}`}</span>
+            <span className="balance-text">{`Chickens: ${score}`}</span>
           </div>
         </div>
       </div>
 
-      {/* Travel icon */}
       <div
         className="fixed z-50 flex flex-col justify-between"
         style={{
@@ -99,7 +62,7 @@ export const ChickenRescueHUD: React.FC = () => {
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            travelHome();
+            navigate("/home");
           }}
         >
           <img
@@ -121,7 +84,7 @@ export const ChickenRescueHUD: React.FC = () => {
         </div>
       </div>
 
-      {ready && (
+      {showMoveHint && (
         <div className="absolute w-full h-full pointer-events-none">
           <div className="absolute w-full h-full bg-black opacity-50" />
           <div className="flex items-center justify-center absolute inset-0">
