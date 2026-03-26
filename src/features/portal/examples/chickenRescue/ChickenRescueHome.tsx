@@ -5,7 +5,6 @@ import { Panel } from "components/ui/Panel";
 import { Button } from "components/ui/Button";
 import { Label } from "components/ui/Label";
 import { SUNNYSIDE } from "assets/sunnyside";
-import chookIcon from "assets/icons/chook.webp";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { NPC_WEARABLES } from "lib/npcs";
 import lock from "assets/icons/lock.png";
@@ -13,7 +12,6 @@ import { attemptsFromMinigame } from "./lib/chickenRescueMachine";
 import {
   chickenRescueHomeRootStyle,
   coopFeedProgressBarWidthPx,
-  chookDisplayWidthPx,
 } from "./lib/chickenRescueHomeLayout";
 import {
   findNuggetJob,
@@ -29,6 +27,7 @@ import {
   MinigameAttempts,
 } from "./components/ChickenRescueRules";
 import { ChickenRescueCoopPanel } from "./components/ChickenRescueCoopPanel";
+import { ChickenRescueHungryGoblinNpc } from "./components/ChickenRescueHungryGoblinNpc";
 
 export const ChickenRescueHome: React.FC = () => {
   const navigate = useNavigate();
@@ -74,34 +73,21 @@ export const ChickenRescueHome: React.FC = () => {
       className="relative min-h-screen w-full overflow-hidden [image-rendering:pixelated]"
       style={chickenRescueHomeRootStyle()}
     >
-      <ChickenRescueHomeHUD />
+      <ChickenRescueHomeHUD onOpenShop={openCluckcoinShop} />
 
       <CluckcoinShopModal
         show={cluckcoinShopOpen}
         onClose={() => setCluckcoinShopOpen(false)}
       />
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-28 z-10 gap-3">
-        <button
-          type="button"
-          className="pointer-events-auto rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-900/60 p-0.5"
-          onClick={openCluckcoinShop}
-          aria-label={t("minigame.cluckcoinMarketplaceTitle")}
-        >
-          <img
-            src={SUNNYSIDE.icons.shop}
-            alt=""
-            className="w-12 h-12 sm:w-14 sm:h-14 pixelated drop-shadow-md opacity-95 hover:opacity-100 transition-opacity"
-            style={{ imageRendering: "pixelated" }}
-          />
-        </button>
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-28 z-10 gap-2">
         <button
           type="button"
           className="pointer-events-auto flex flex-col items-center gap-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-900/60"
           onClick={() => setCoopModalOpen(true)}
           aria-label={t("minigame.coop")}
         >
-          <div className="relative">
+          <div className="relative opacity-95 hover:opacity-100 transition-opacity">
             {nuggetReady && (
               <img
                 src={SUNNYSIDE.icons.expression_alerted}
@@ -110,16 +96,7 @@ export const ChickenRescueHome: React.FC = () => {
                 style={{ imageRendering: "pixelated" }}
               />
             )}
-            <img
-              src={chookIcon}
-              alt=""
-              className="max-w-none pixelated drop-shadow-lg opacity-90 hover:opacity-100 transition-opacity"
-              style={{
-                width: chookDisplayWidthPx(),
-                height: "auto",
-                imageRendering: "pixelated",
-              }}
-            />
+            <ChickenRescueHungryGoblinNpc />
           </div>
           {nuggetCooking && (
             <div
@@ -178,9 +155,6 @@ export const ChickenRescueHome: React.FC = () => {
                   {t("minigame.noAttemptsRemaining")}
                 </Label>
               </div>
-              <p className="text-sm mb-2">
-                {t("minigame.youHaveRunOutOfAttempts")}
-              </p>
               <p className="text-sm mb-2">
                 {t("minigame.youHaveRunOutOfAttempts")}
               </p>
