@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "components/ui/Modal";
 import { Panel } from "components/ui/Panel";
@@ -8,12 +8,7 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { NPC_WEARABLES } from "lib/npcs";
 import lock from "assets/icons/lock.png";
-import {
-  attemptsFromMinigame,
-  canClaimFreeAttempts,
-  CLAIM_FREE_ATTEMPTS_ACTION,
-  dailyFreeAttemptsMintAmount,
-} from "./lib/chickenRescueMachine";
+import { coinsFromMinigame } from "./lib/chickenRescueMachine";
 import {
   chickenRescueHomeRootStyle,
   coopFeedProgressBarWidthPx,
@@ -28,68 +23,26 @@ import { CluckcoinShopModal } from "./components/CluckcoinShopModal";
 import { ChickenRescueHomeHUD } from "./components/ChickenRescueHomeHUD";
 import {
   ChickenRescueRules,
-  MinigameAttempts,
+  MinigameCoins,
 } from "./components/ChickenRescueRules";
 import { ChickenRescueCoopPanel } from "./components/ChickenRescueCoopPanel";
 import { ChickenRescueHungryGoblinNpc } from "./components/ChickenRescueHungryGoblinNpc";
-import { ClaimFreeAttemptsModal } from "./components/ClaimFreeAttemptsModal";
-
-const CLAIM_FREE_MODAL_DISMISS_KEY = "chickenRescue_dismissClaimFree";
+import { GoblinChickenModal } from "./components/GoblinChickenModal";
 
 export const ChickenRescueHome: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useAppTranslation();
-  const { minigame, actions, dispatchAction, clearApiError, apiError } =
+  const { minigame, dispatchAction, clearApiError, apiError } =
     useMinigameSession();
   const now = useNowTicker();
 
   const [playModalOpen, setPlayModalOpen] = useState(false);
   const [coopModalOpen, setCoopModalOpen] = useState(false);
   const [cluckcoinShopOpen, setCluckcoinShopOpen] = useState(false);
-  const [claimModalDismissedToday, setClaimModalDismissedToday] =
-    useState(false);
+  const [goblinChickenModalOpen, setGoblinChickenModalOpen] = useState(false);
 
-  useLayoutEffect(() => {
-    try {
-      const today = new Date().toISOString().slice(0, 10);
-      if (sessionStorage.getItem(CLAIM_FREE_MODAL_DISMISS_KEY) === today) {
-        setClaimModalDismissedToday(true);
-      }
-    } catch {
-      // sessionStorage unavailable
-    }
-  }, []);
-
-  const attemptsLeft = attemptsFromMinigame(minigame);
+  const coinsLeft = coinsFromMinigame(minigame);
   const cluckcoin = minigame.balances.Cluckcoin ?? 0;
-
-  const canClaimFree = useMemo(
-    () => canClaimFreeAttempts(minigame, actions),
-    [minigame, actions],
-  );
-  const freeAttemptsMintAmount = useMemo(
-    () => dailyFreeAttemptsMintAmount(actions),
-    [actions],
-  );
-  const showClaimFreeAttemptsModal =
-    canClaimFree && !claimModalDismissedToday;
-
-  const dismissClaimFreeAttemptsModal = () => {
-    try {
-      sessionStorage.setItem(
-        CLAIM_FREE_MODAL_DISMISS_KEY,
-        new Date().toISOString().slice(0, 10),
-      );
-    } catch {
-      // ignore
-    }
-    setClaimModalDismissedToday(true);
-  };
-
-  const claimFreeAttempts = () => {
-    clearApiError();
-    dispatchAction({ action: CLAIM_FREE_ATTEMPTS_ACTION });
-  };
 
   const nuggetJob = useMemo(
     () => findNuggetJob(minigame.producing),
@@ -108,8 +61,8 @@ export const ChickenRescueHome: React.FC = () => {
     }
   };
 
-  const buyRun = () => {
-    dispatchAction({ action: "BUY_RUNS" });
+  const buyCoin = () => {
+    dispatchAction({ action: "BUY_COIN" });
   };
 
   const openCluckcoinShop = () => {
@@ -127,15 +80,6 @@ export const ChickenRescueHome: React.FC = () => {
       <CluckcoinShopModal
         show={cluckcoinShopOpen}
         onClose={() => setCluckcoinShopOpen(false)}
-      />
-
-      <ClaimFreeAttemptsModal
-        show={showClaimFreeAttemptsModal}
-        freeAttemptsCount={freeAttemptsMintAmount}
-        apiError={apiError}
-        onClaim={claimFreeAttempts}
-        onDismiss={dismissClaimFreeAttemptsModal}
-        onClearError={clearApiError}
       />
 
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-28 z-10 gap-2">
@@ -172,16 +116,33 @@ export const ChickenRescueHome: React.FC = () => {
             </div>
           )}
         </button>
+
+        <button
+          type="button"
+          className="pointer-events-auto mt-2 rounded-xl border-2 border-[#3e2731]/70 bg-[#e4a672]/30 p-2 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-900/60"
+          onClick={() => setGoblinChickenModalOpen(true)}
+          aria-label={t("minigame.goblinChickenTitle")}
+        >
+          <img
+            src={SUNNYSIDE.animals.hungryChicken}
+            alt=""
+            className="w-16 h-16 sm:w-20 sm:h-20 pixelated mx-auto"
+            style={{ imageRendering: "pixelated" }}
+          />
+          <span className="text-[10px] sm:text-xs mt-1 block text-center font-medium text-[#3e2731]">
+            {t("minigame.goblinChickenTitle")}
+          </span>
+        </button>
       </div>
 
       <div className="absolute bottom-8 left-0 right-0 flex justify-center z-10 px-4">
-        {attemptsLeft > 0 ? (
+        {coinsLeft > 0 ? (
           <Button onClick={() => setPlayModalOpen(true)}>
             {t("minigame.playNow")}
           </Button>
         ) : (
           <Button onClick={() => setPlayModalOpen(true)}>
-            {t("minigame.noAttemptsRemaining")}
+            {t("minigame.noCoinsRemaining")}
           </Button>
         )}
       </div>
@@ -192,11 +153,20 @@ export const ChickenRescueHome: React.FC = () => {
         </Modal>
       )}
 
-      {playModalOpen && attemptsLeft > 0 && (
+      {goblinChickenModalOpen && (
+        <Modal show>
+          <GoblinChickenModal
+            onClose={() => setGoblinChickenModalOpen(false)}
+            now={now}
+          />
+        </Modal>
+      )}
+
+      {playModalOpen && coinsLeft > 0 && (
         <Modal show>
           <Panel bumpkinParts={NPC_WEARABLES.grubnuk}>
             <ChickenRescueRules
-              attemptsLeft={attemptsLeft}
+              coinsLeft={coinsLeft}
               onAcknowledged={startRun}
               onClose={() => setPlayModalOpen(false)}
             />
@@ -204,17 +174,17 @@ export const ChickenRescueHome: React.FC = () => {
         </Modal>
       )}
 
-      {playModalOpen && attemptsLeft <= 0 && (
+      {playModalOpen && coinsLeft <= 0 && (
         <Modal show>
           <Panel>
             <div className="p-1">
               <div className="flex justify-between items-center mb-2">
                 <Label icon={lock} type="danger">
-                  {t("minigame.noAttemptsRemaining")}
+                  {t("minigame.noCoinsRemaining")}
                 </Label>
               </div>
               <p className="text-sm mb-2">
-                {t("minigame.youHaveRunOutOfAttempts")}
+                {t("minigame.youHaveRunOutOfCoins")}
               </p>
               <p className="text-sm mb-2">
                 {cluckcoin >= 1
@@ -223,7 +193,12 @@ export const ChickenRescueHome: React.FC = () => {
                     })
                   : t("minigame.getCluckcoinOnMarketplace")}
               </p>
-              <MinigameAttempts attemptsLeft={attemptsLeft} />
+              <MinigameCoins coinsLeft={coinsLeft} />
+              {apiError && (
+                <p className="text-xs text-red-600 dark:text-red-400 mt-2 break-words">
+                  {apiError}
+                </p>
+              )}
             </div>
             <div className="flex flex-wrap gap-1 mt-2">
               <Button onClick={() => closePortal(navigate)} className="mr-1">
@@ -232,10 +207,11 @@ export const ChickenRescueHome: React.FC = () => {
               <Button
                 disabled={cluckcoin < 1}
                 onClick={() => {
-                  buyRun();
+                  clearApiError();
+                  buyCoin();
                 }}
               >
-                {t("minigame.spendCluckcoinForAttempt")}
+                {t("minigame.spendCluckcoinForCoin")}
               </Button>
               <Button className="ml-1" onClick={() => setPlayModalOpen(false)}>
                 {t("close")}

@@ -4960,6 +4960,22 @@ const minigame: Record<Minigame, string> = {
   "minigame.missionComplete": ENGLISH_TERMS["minigame.missionComplete"],
   "minigame.missionFailed": ENGLISH_TERMS["minigame.missionFailed"],
   "minigame.attemptsRemaining": ENGLISH_TERMS["minigame.attemptsRemaining"],
+  "minigame.coinsRemaining": ENGLISH_TERMS["minigame.coinsRemaining"],
+  "minigame.noCoinsRemaining": ENGLISH_TERMS["minigame.noCoinsRemaining"],
+  "minigame.youHaveRunOutOfCoins":
+    ENGLISH_TERMS["minigame.youHaveRunOutOfCoins"],
+  "minigame.spendCluckcoinForCoin":
+    ENGLISH_TERMS["minigame.spendCluckcoinForCoin"],
+  "minigame.goblinChickenTitle": ENGLISH_TERMS["minigame.goblinChickenTitle"],
+  "minigame.goblinChickenBody": ENGLISH_TERMS["minigame.goblinChickenBody"],
+  "minigame.collectGoblinCoins":
+    ENGLISH_TERMS["minigame.collectGoblinCoins"],
+  "minigame.startNextCoinDrop":
+    ENGLISH_TERMS["minigame.startNextCoinDrop"],
+  "minigame.buyGoblinChicken": ENGLISH_TERMS["minigame.buyGoblinChicken"],
+  "minigame.coinDropCooking": ENGLISH_TERMS["minigame.coinDropCooking"],
+  "minigame.goblinChickensOwned":
+    ENGLISH_TERMS["minigame.goblinChickensOwned"],
   "minigame.coop": ENGLISH_TERMS["minigame.coop"],
   "minigame.coopChooks": ENGLISH_TERMS["minigame.coopChooks"],
   "minigame.coopNuggets": ENGLISH_TERMS["minigame.coopNuggets"],

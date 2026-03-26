@@ -1,15 +1,35 @@
-import {
-  applyOptimisticPortalAction,
-  type MinigameActionDefinition,
-  type MinigameSessionResponse,
-} from "lib/portal";
+import type { MinigameSessionResponse } from "lib/portal";
+import { emptyMinigameState } from "lib/portal/processAction";
+import { runtimeToMinigameSession } from "lib/portal/runtimeHelpers";
 
-export const CLAIM_FREE_ATTEMPTS_ACTION = "CLAIM_FREE_ATTEMPTS" as const;
+/** Must match sunflower-land-api `CHICKEN_RESCUE_BOOTSTRAP_COIN_JOB_ID`. */
+export const CHICKEN_RESCUE_BOOTSTRAP_COIN_JOB_ID =
+  "bootstrap-goblin-coin-0" as const;
 
-export function attemptsFromMinigame(
+export function coinsFromMinigame(
   minigame: MinigameSessionResponse["minigame"],
 ): number {
-  return minigame.balances.Attempt ?? 0;
+  return minigame.balances.Coin ?? 0;
+}
+
+export function goblinChickensFromMinigame(
+  minigame: MinigameSessionResponse["minigame"],
+): number {
+  return minigame.balances.GoblinChicken ?? 0;
+}
+
+/** Initial session for offline Chicken Rescue (mirrors server bootstrap). */
+export function createChickenRescueOfflineMinigame(
+  now = Date.now(),
+): MinigameSessionResponse["minigame"] {
+  const base = emptyMinigameState(now);
+  base.balances.GoblinChicken = 1;
+  base.producing[CHICKEN_RESCUE_BOOTSTRAP_COIN_JOB_ID] = {
+    outputToken: "Coin",
+    startedAt: now - 1,
+    completesAt: now,
+  };
+  return runtimeToMinigameSession(base);
 }
 
 /** Chooks minted on WIN; matches server ranged mint max (100). */
@@ -21,30 +41,6 @@ export function hasLiveGame(
   minigame: MinigameSessionResponse["minigame"],
 ): boolean {
   return (minigame.balances.LIVE_GAME ?? 0) > 0;
-}
-
-/** True if {@link CLAIM_FREE_ATTEMPTS_ACTION} would succeed (not yet claimed for the UTC day, per rules). */
-export function canClaimFreeAttempts(
-  minigame: MinigameSessionResponse["minigame"],
-  actions: Record<string, unknown>,
-): boolean {
-  return applyOptimisticPortalAction(actions, minigame, {
-    actionId: CLAIM_FREE_ATTEMPTS_ACTION,
-  }).ok;
-}
-
-/** Minted Attempt count from the daily free-claim action (for copy); defaults to 3 if missing. */
-export function dailyFreeAttemptsMintAmount(
-  actions: Record<string, unknown>,
-): number {
-  const def = actions[CLAIM_FREE_ATTEMPTS_ACTION] as
-    | MinigameActionDefinition
-    | undefined;
-  const rule = def?.mint?.Attempt;
-  if (rule && "amount" in rule) {
-    return rule.amount;
-  }
-  return 3;
 }
 
 /** Run length on /game after START (seconds). */

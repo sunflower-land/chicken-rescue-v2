@@ -5,32 +5,32 @@ import { Button } from "components/ui/Button";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { Label } from "components/ui/Label";
 
-export const MinigameAttempts: React.FC<{ attemptsLeft: number }> = ({
-  attemptsLeft,
+export const MinigameCoins: React.FC<{ coinsLeft: number }> = ({
+  coinsLeft,
 }) => {
   const { t } = useAppTranslation();
 
-  if (attemptsLeft > 0) {
+  if (coinsLeft > 0) {
     return (
-      <Label type="vibrant">{`${attemptsLeft}  ${t(
-        "minigame.attemptsRemaining",
+      <Label type="vibrant">{`${coinsLeft} ${t(
+        "minigame.coinsRemaining",
       )}`}</Label>
     );
   }
 
-  return <Label type="danger">{t("minigame.noAttemptsRemaining")}</Label>;
+  return <Label type="danger">{t("minigame.noCoinsRemaining")}</Label>;
 };
 
 interface Props {
   onAcknowledged: () => void;
   onClose: () => void;
-  attemptsLeft: number;
+  coinsLeft: number;
 }
 
 export const ChickenRescueRules: React.FC<Props> = ({
   onAcknowledged,
   onClose,
-  attemptsLeft,
+  coinsLeft,
 }) => {
   const { t } = useAppTranslation();
 
@@ -41,7 +41,7 @@ export const ChickenRescueRules: React.FC<Props> = ({
           <Label type="default" icon={SUNNYSIDE.npcs.goblinHead}>
             {t("minigame.chickenRescue")}
           </Label>
-          <MinigameAttempts attemptsLeft={attemptsLeft} />
+          <MinigameCoins coinsLeft={coinsLeft} />
         </div>
         <p className="text-sm px-1 mb-2">{t("minigame.chickenRescueHelp")}</p>
       </div>
@@ -59,7 +59,7 @@ export const ChickenRescueRules: React.FC<Props> = ({
           onClick={() => {
             onAcknowledged();
           }}
-          disabled={attemptsLeft <= 0}
+          disabled={coinsLeft <= 0}
         >
           {t("start")}
         </Button>

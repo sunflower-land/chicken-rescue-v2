@@ -5664,6 +5664,22 @@ const minigame: Record<Minigame, string> = {
   "minigame.missionComplete": ENGLISH_TERMS["minigame.missionComplete"],
   "minigame.missionFailed": ENGLISH_TERMS["minigame.missionFailed"],
   "minigame.attemptsRemaining": ENGLISH_TERMS["minigame.attemptsRemaining"],
+  "minigame.coinsRemaining": ENGLISH_TERMS["minigame.coinsRemaining"],
+  "minigame.noCoinsRemaining": ENGLISH_TERMS["minigame.noCoinsRemaining"],
+  "minigame.youHaveRunOutOfCoins":
+    ENGLISH_TERMS["minigame.youHaveRunOutOfCoins"],
+  "minigame.spendCluckcoinForCoin":
+    ENGLISH_TERMS["minigame.spendCluckcoinForCoin"],
+  "minigame.goblinChickenTitle": ENGLISH_TERMS["minigame.goblinChickenTitle"],
+  "minigame.goblinChickenBody": ENGLISH_TERMS["minigame.goblinChickenBody"],
+  "minigame.collectGoblinCoins":
+    ENGLISH_TERMS["minigame.collectGoblinCoins"],
+  "minigame.startNextCoinDrop":
+    ENGLISH_TERMS["minigame.startNextCoinDrop"],
+  "minigame.buyGoblinChicken": ENGLISH_TERMS["minigame.buyGoblinChicken"],
+  "minigame.coinDropCooking": ENGLISH_TERMS["minigame.coinDropCooking"],
+  "minigame.goblinChickensOwned":
+    ENGLISH_TERMS["minigame.goblinChickensOwned"],
   "minigame.coop": ENGLISH_TERMS["minigame.coop"],
   "minigame.coopChooks": ENGLISH_TERMS["minigame.coopChooks"],
   "minigame.coopNuggets": ENGLISH_TERMS["minigame.coopNuggets"],
@@ -5700,6 +5716,30 @@ const minigame: Record<Minigame, string> = {
     ENGLISH_TERMS["minigame.claimFreeAttemptsButton"],
   "minigame.claimFreeAttemptsLater":
     ENGLISH_TERMS["minigame.claimFreeAttemptsLater"],
+  "minigame.portalShopTitle": ENGLISH_TERMS["minigame.portalShopTitle"],
+  "minigame.portalShopSubtitle":
+    ENGLISH_TERMS["minigame.portalShopSubtitle"],
+  "minigame.shopBack": ENGLISH_TERMS["minigame.shopBack"],
+  "minigame.shopConfirm": ENGLISH_TERMS["minigame.shopConfirm"],
+  "minigame.shopPriceLabel": ENGLISH_TERMS["minigame.shopPriceLabel"],
+  "minigame.shopReceiveLabel": ENGLISH_TERMS["minigame.shopReceiveLabel"],
+  "minigame.shopCluckcoinName": ENGLISH_TERMS["minigame.shopCluckcoinName"],
+  "minigame.shopCluckcoinListBlurb":
+    ENGLISH_TERMS["minigame.shopCluckcoinListBlurb"],
+  "minigame.shopCluckcoinDetail":
+    ENGLISH_TERMS["minigame.shopCluckcoinDetail"],
+  "minigame.shopCluckcoinPriceValue":
+    ENGLISH_TERMS["minigame.shopCluckcoinPriceValue"],
+  "minigame.shopCluckcoinReceiveValue":
+    ENGLISH_TERMS["minigame.shopCluckcoinReceiveValue"],
+  "minigame.shopCluckcoinConfirm":
+    ENGLISH_TERMS["minigame.shopCluckcoinConfirm"],
+  "minigame.shopInsufficientNuggets":
+    ENGLISH_TERMS["minigame.shopInsufficientNuggets"],
+  "minigame.marketplaceTeaserTitle":
+    ENGLISH_TERMS["minigame.marketplaceTeaserTitle"],
+  "minigame.marketplaceTeaserDescription":
+    ENGLISH_TERMS["minigame.marketplaceTeaserDescription"],
 };
 
 const cropMachine: Record<CropMachine, string> = {

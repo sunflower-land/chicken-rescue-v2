@@ -5640,7 +5640,7 @@ const minigame: Record<Minigame, string> = {
   "minigame.playNow": "Play now",
   "minigame.purchase": "Purchase",
   "minigame.chickenRescueHelp":
-    "Rescue chooks from the paddock for the hungry goblin. Each run earns Chooks you can spend back home.",
+    "Rescue chooks from the paddock for the hungry goblin. Each live run costs 1 Coin (from your Goblin Chickens). Earned Chooks can be spent back home.",
   "minigame.discovered.one": "Howdy Bumpkin, you've discovered a portal!",
   "minigame.discovered.two":
     "Step into the magical realm to earn rewards and glory. Good luck!",
@@ -5663,6 +5663,18 @@ const minigame: Record<Minigame, string> = {
   "minigame.missionComplete": "Mission complete",
   "minigame.missionFailed": "Mission failed",
   "minigame.attemptsRemaining": "attempts left",
+  "minigame.coinsRemaining": "coins left",
+  "minigame.noCoinsRemaining": "No coins remaining",
+  "minigame.youHaveRunOutOfCoins": "You have no Coins left for a live run.",
+  "minigame.spendCluckcoinForCoin": "Spend 1 Cluckcoin for 1 Coin (daily limit)",
+  "minigame.goblinChickenTitle": "Goblin Chicken",
+  "minigame.goblinChickenBody":
+    "Each Goblin Chicken can run an 8-hour timer. When it finishes, collect 3 Coins. You own {{count}} Goblin Chicken(s).",
+  "minigame.collectGoblinCoins": "Collect 3 Coins",
+  "minigame.startNextCoinDrop": "Start next coin drop",
+  "minigame.buyGoblinChicken": "Buy Goblin Chicken (5 Cluckcoin)",
+  "minigame.coinDropCooking": "Dropping… {{time}} left",
+  "minigame.goblinChickensOwned": "Goblin Chickens: {{count}}",
   "minigame.coop": "Hungry goblin",
   "minigame.coopChooks": "Chooks: {{count}}",
   "minigame.coopNuggets": "Nuggets: {{count}}",
@@ -5685,9 +5697,9 @@ const minigame: Record<Minigame, string> = {
   "minigame.continueToMarketplace": "Continue to marketplace",
   "minigame.spendCluckcoinForAttempt": "Spend 1 Cluckcoin for 1 attempt",
   "minigame.cluckcoinBalanceForUnlock":
-    "You have {{count}} Cluckcoin. Spend one to unlock a play attempt.",
+    "You have {{count}} Cluckcoin. Spend one to mint 1 Coin (once per UTC day).",
   "minigame.getCluckcoinOnMarketplace":
-    "You need Cluckcoin to buy attempts. Tap the shop above the chicken to swap Nuggets or open the marketplace.",
+    "You need Cluckcoin to mint Coins or buy Goblin Chickens. Tap the shop above to swap Nuggets or open the marketplace.",
   "minigame.claimFreeAttemptsTitle": "Daily free attempts",
   "minigame.claimFreeAttemptsBody":
     "You have not claimed today's free tries yet. Claim {{count}} play attempts to use on the minigame.",
@@ -5702,9 +5714,9 @@ const minigame: Record<Minigame, string> = {
   "minigame.shopReceiveLabel": "You receive",
   "minigame.shopCluckcoinName": "Cluckcoin",
   "minigame.shopCluckcoinListBlurb":
-    "Swap 1 Nugget for 1 Cluckcoin to unlock extra runs.",
+    "Swap 1 Nugget for 1 Cluckcoin to use in this minigame.",
   "minigame.shopCluckcoinDetail":
-    "Trade Nuggets for Cluckcoin at a fixed rate. Use Cluckcoin here when you are out of daily play attempts.",
+    "Trade Nuggets for Cluckcoin at a fixed rate. Spend Cluckcoin on Coins, Goblin Chickens, and more.",
   "minigame.shopCluckcoinPriceValue": "1 Nugget",
   "minigame.shopCluckcoinReceiveValue": "1 Cluckcoin",
   "minigame.shopCluckcoinConfirm":

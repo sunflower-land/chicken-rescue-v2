@@ -8,9 +8,26 @@ export const CHICKEN_RESCUE_CLIENT_ACTIONS: Record<
   string,
   MinigameActionDefinition
 > = {
-  CLAIM_FREE_ATTEMPTS: {
+  START_GOBLIN_COIN_DROP: {
+    produce: {
+      Coin: {
+        msToComplete: 8 * 60 * 60 * 1000,
+        limit: 999,
+        capByBalance: "GoblinChicken",
+      },
+    },
+  },
+  COLLECT_GOBLIN_COINS: {
+    collect: {
+      Coin: { amount: 3 },
+    },
+  },
+  BUY_GOBLIN_CHICKEN: {
+    burn: {
+      Cluckcoin: { amount: 5 },
+    },
     mint: {
-      Attempt: { amount: 3, dailyCap: 3 },
+      GoblinChicken: { amount: 1 },
     },
   },
   START: {
@@ -18,7 +35,7 @@ export const CHICKEN_RESCUE_CLIENT_ACTIONS: Record<
       LIVE_GAME: { amount: 1 },
     },
     burn: {
-      Attempt: { amount: 1 },
+      Coin: { amount: 1 },
     },
   },
   LOSE: {
@@ -55,9 +72,9 @@ export const CHICKEN_RESCUE_CLIENT_ACTIONS: Record<
       Nugget: { amount: 1 },
     },
   },
-  BUY_RUNS: {
+  BUY_COIN: {
     mint: {
-      Attempt: { amount: 1, dailyCap: 1 },
+      Coin: { amount: 1, dailyCap: 1 },
     },
     burn: {
       Cluckcoin: { amount: 1 },

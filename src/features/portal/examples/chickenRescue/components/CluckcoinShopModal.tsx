@@ -258,9 +258,12 @@ const ShopListRow: React.FC<{
           </p>
         )}
       </div>
-      <span className="text-neutral-600 dark:text-neutral-300 text-lg shrink-0">
-        ›
-      </span>
+      <img
+        src={SUNNYSIDE.icons.chevron_right}
+        alt=""
+        className="w-4 h-4 shrink-0 opacity-70"
+        style={{ imageRendering: "pixelated" }}
+      />
     </button>
   );
 };

@@ -18,9 +18,14 @@ export const PortalBootstrapContext =
 
 export const PortalProvider: React.FC<
   PortalBootstrapConfig & { children: React.ReactNode }
-> = ({ children, offlineActions, bootstrapAction }) => {
+> = ({ children, offlineActions, bootstrapAction, offlineMinigame }) => {
   const machine = React.useMemo(
-    () => createPortalBootstrapMachine({ offlineActions, bootstrapAction }),
+    () =>
+      createPortalBootstrapMachine({
+        offlineActions,
+        bootstrapAction,
+        offlineMinigame,
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );

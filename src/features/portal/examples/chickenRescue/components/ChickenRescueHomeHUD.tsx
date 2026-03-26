@@ -19,6 +19,8 @@ export const ChickenRescueHomeHUD: React.FC<Props> = ({ onOpenShop }) => {
   const chooks = minigame.balances.Chook ?? 0;
   const cluckcoin = minigame.balances.Cluckcoin ?? 0;
   const nuggets = minigame.balances.Nugget ?? 0;
+  const coins = minigame.balances.Coin ?? 0;
+  const goblins = minigame.balances.GoblinChicken ?? 0;
 
   return (
     <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start gap-3 pointer-events-none">
@@ -46,6 +48,18 @@ export const ChickenRescueHomeHUD: React.FC<Props> = ({ onOpenShop }) => {
         <Box
           image={cluckCoinIcon}
           count={new Decimal(cluckcoin)}
+          showCountIfZero
+          className="flex-shrink-0"
+        />
+        <Box
+          image={SUNNYSIDE.ui.coins}
+          count={new Decimal(coins)}
+          showCountIfZero
+          className="flex-shrink-0"
+        />
+        <Box
+          image={SUNNYSIDE.animals.hungryChicken}
+          count={new Decimal(goblins)}
           showCountIfZero
           className="flex-shrink-0"
         />

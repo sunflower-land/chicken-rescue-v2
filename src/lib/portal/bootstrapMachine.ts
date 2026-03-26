@@ -62,12 +62,19 @@ export type PortalBootstrapConfig = {
    * claim daily free attempts). Skipped when running offline.
    */
   bootstrapAction?: string;
+  /**
+   * When set, used instead of {@link emptySessionMinigame} when there is no API URL
+   * (local/offline mode).
+   */
+  offlineMinigame?: () => MinigameSessionResponse["minigame"];
 };
 
 export function createPortalBootstrapMachine({
   offlineActions,
   bootstrapAction,
+  offlineMinigame,
 }: PortalBootstrapConfig) {
+  const initialMinigame = offlineMinigame?.() ?? emptySessionMinigame();
   return createMachine({
     id: "portalBootstrap",
     initial: "initialising",
@@ -75,7 +82,7 @@ export function createPortalBootstrapMachine({
       id: 0,
       jwt: getJwt() ?? "",
       farm: { balance: "0" },
-      minigame: emptySessionMinigame(),
+      minigame: initialMinigame,
       actions: {},
     },
     states: {
@@ -97,7 +104,7 @@ export function createPortalBootstrapMachine({
               const farm = { balance: "0" };
               return {
                 farm,
-                minigame: emptySessionMinigame(),
+                minigame: offlineMinigame?.() ?? emptySessionMinigame(),
                 actions: offlineActions,
                 farmId: 0,
               };
