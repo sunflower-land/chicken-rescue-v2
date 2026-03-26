@@ -40,7 +40,6 @@ export const CHICKEN_RESCUE_CLIENT_ACTIONS: Record<
     },
     burn: {
       Chook: { amount: 50 },
-      ChickenWeigth: { amount: 1 },
     },
   },
   COLLECT_NUGGET: {

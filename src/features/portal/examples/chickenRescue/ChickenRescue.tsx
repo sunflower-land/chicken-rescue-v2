@@ -8,10 +8,7 @@ import { ChickenRescueRoutes } from "./ChickenRescueRoutes";
 export const ChickenRescueApp: React.FC = () => {
   return (
     <BrowserRouter>
-      <PortalProvider
-        offlineActions={CHICKEN_RESCUE_CLIENT_ACTIONS}
-        bootstrapAction="CLAIM_FREE_ATTEMPTS"
-      >
+      <PortalProvider offlineActions={CHICKEN_RESCUE_CLIENT_ACTIONS}>
         <ChickenRescueRoutes />
       </PortalProvider>
     </BrowserRouter>

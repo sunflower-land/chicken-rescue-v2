@@ -5666,10 +5666,10 @@ const minigame: Record<Minigame, string> = {
   "minigame.coop": "Hungry goblin",
   "minigame.coopChooks": "Chooks: {{count}}",
   "minigame.coopNuggets": "Nuggets: {{count}}",
-  "minigame.coopWeight": "Feed stock: {{count}}",
   "minigame.feedChook": "Feed goblin",
-  "minigame.feedChookCosts":
-    "Costs 50 Chooks and 1 feed stock. The goblin will cook up a nugget after a short wait.",
+  "minigame.feedGoblinPrompt": "Would you like to feed the goblin?",
+  "minigame.feedGoblinOffer":
+    "It costs {{chookCost}} Chooks. After a short wait, you will receive 1 nugget.",
   "minigame.chooksScoreHud": "Chooks: {{count}}",
   "minigame.chickenRescueRunComplete":
     "Congratulations! You rescued {{rescued}} chooks and earned {{earned}} Chooks for the hungry goblin.",
@@ -5688,6 +5688,31 @@ const minigame: Record<Minigame, string> = {
     "You have {{count}} Cluckcoin. Spend one to unlock a play attempt.",
   "minigame.getCluckcoinOnMarketplace":
     "You need Cluckcoin to buy attempts. Tap the shop above the chicken to swap Nuggets or open the marketplace.",
+  "minigame.claimFreeAttemptsTitle": "Daily free attempts",
+  "minigame.claimFreeAttemptsBody":
+    "You have not claimed today's free tries yet. Claim {{count}} play attempts to use on the minigame.",
+  "minigame.claimFreeAttemptsButton": "Claim {{count}} free attempts",
+  "minigame.claimFreeAttemptsLater": "Not now",
+  "minigame.portalShopTitle": "Shop",
+  "minigame.portalShopSubtitle":
+    "Spend tokens on minigame items. Tap a row for details and to confirm.",
+  "minigame.shopBack": "Back",
+  "minigame.shopConfirm": "Confirm",
+  "minigame.shopPriceLabel": "Price",
+  "minigame.shopReceiveLabel": "You receive",
+  "minigame.shopCluckcoinName": "Cluckcoin",
+  "minigame.shopCluckcoinListBlurb":
+    "Swap 1 Nugget for 1 Cluckcoin to unlock extra runs.",
+  "minigame.shopCluckcoinDetail":
+    "Trade Nuggets for Cluckcoin at a fixed rate. Use Cluckcoin here when you are out of daily play attempts.",
+  "minigame.shopCluckcoinPriceValue": "1 Nugget",
+  "minigame.shopCluckcoinReceiveValue": "1 Cluckcoin",
+  "minigame.shopCluckcoinConfirm":
+    "You will spend 1 Nugget and receive 1 Cluckcoin. This uses your minigame inventory.",
+  "minigame.shopInsufficientNuggets": "You need 1 Nugget to purchase this.",
+  "minigame.marketplaceTeaserTitle": "Player marketplace",
+  "minigame.marketplaceTeaserDescription":
+    "Buy and sell Cluckcoin and other resources with players on Sunflower Land.",
 };
 
 export const easterEggTerms: Record<EasterEggKeys, string> = {

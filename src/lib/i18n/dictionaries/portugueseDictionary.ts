@@ -5659,9 +5659,9 @@ const minigame: Record<Minigame, string> = {
   "minigame.coop": ENGLISH_TERMS["minigame.coop"],
   "minigame.coopChooks": ENGLISH_TERMS["minigame.coopChooks"],
   "minigame.coopNuggets": ENGLISH_TERMS["minigame.coopNuggets"],
-  "minigame.coopWeight": ENGLISH_TERMS["minigame.coopWeight"],
   "minigame.feedChook": ENGLISH_TERMS["minigame.feedChook"],
-  "minigame.feedChookCosts": ENGLISH_TERMS["minigame.feedChookCosts"],
+  "minigame.feedGoblinPrompt": ENGLISH_TERMS["minigame.feedGoblinPrompt"],
+  "minigame.feedGoblinOffer": ENGLISH_TERMS["minigame.feedGoblinOffer"],
   "minigame.chooksScoreHud": ENGLISH_TERMS["minigame.chooksScoreHud"],
   "minigame.chickenRescueRunComplete":
     ENGLISH_TERMS["minigame.chickenRescueRunComplete"],
@@ -5684,6 +5684,14 @@ const minigame: Record<Minigame, string> = {
     ENGLISH_TERMS["minigame.cluckcoinBalanceForUnlock"],
   "minigame.getCluckcoinOnMarketplace":
     ENGLISH_TERMS["minigame.getCluckcoinOnMarketplace"],
+  "minigame.claimFreeAttemptsTitle":
+    ENGLISH_TERMS["minigame.claimFreeAttemptsTitle"],
+  "minigame.claimFreeAttemptsBody":
+    ENGLISH_TERMS["minigame.claimFreeAttemptsBody"],
+  "minigame.claimFreeAttemptsButton":
+    ENGLISH_TERMS["minigame.claimFreeAttemptsButton"],
+  "minigame.claimFreeAttemptsLater":
+    ENGLISH_TERMS["minigame.claimFreeAttemptsLater"],
 };
 
 export const easterEggTerms: Record<EasterEggKeys, string> = {

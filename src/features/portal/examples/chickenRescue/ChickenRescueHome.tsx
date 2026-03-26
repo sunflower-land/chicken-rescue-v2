@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useLayoutEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "components/ui/Modal";
 import { Panel } from "components/ui/Panel";
@@ -8,7 +8,12 @@ import { SUNNYSIDE } from "assets/sunnyside";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { NPC_WEARABLES } from "lib/npcs";
 import lock from "assets/icons/lock.png";
-import { attemptsFromMinigame } from "./lib/chickenRescueMachine";
+import {
+  attemptsFromMinigame,
+  canClaimFreeAttempts,
+  CLAIM_FREE_ATTEMPTS_ACTION,
+  dailyFreeAttemptsMintAmount,
+} from "./lib/chickenRescueMachine";
 import {
   chickenRescueHomeRootStyle,
   coopFeedProgressBarWidthPx,
@@ -27,19 +32,64 @@ import {
 } from "./components/ChickenRescueRules";
 import { ChickenRescueCoopPanel } from "./components/ChickenRescueCoopPanel";
 import { ChickenRescueHungryGoblinNpc } from "./components/ChickenRescueHungryGoblinNpc";
+import { ClaimFreeAttemptsModal } from "./components/ClaimFreeAttemptsModal";
+
+const CLAIM_FREE_MODAL_DISMISS_KEY = "chickenRescue_dismissClaimFree";
 
 export const ChickenRescueHome: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useAppTranslation();
-  const { minigame, dispatchAction, clearApiError } = useMinigameSession();
+  const { minigame, actions, dispatchAction, clearApiError, apiError } =
+    useMinigameSession();
   const now = useNowTicker();
 
   const [playModalOpen, setPlayModalOpen] = useState(false);
   const [coopModalOpen, setCoopModalOpen] = useState(false);
   const [cluckcoinShopOpen, setCluckcoinShopOpen] = useState(false);
+  const [claimModalDismissedToday, setClaimModalDismissedToday] =
+    useState(false);
+
+  useLayoutEffect(() => {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      if (sessionStorage.getItem(CLAIM_FREE_MODAL_DISMISS_KEY) === today) {
+        setClaimModalDismissedToday(true);
+      }
+    } catch {
+      // sessionStorage unavailable
+    }
+  }, []);
 
   const attemptsLeft = attemptsFromMinigame(minigame);
   const cluckcoin = minigame.balances.Cluckcoin ?? 0;
+
+  const canClaimFree = useMemo(
+    () => canClaimFreeAttempts(minigame, actions),
+    [minigame, actions],
+  );
+  const freeAttemptsMintAmount = useMemo(
+    () => dailyFreeAttemptsMintAmount(actions),
+    [actions],
+  );
+  const showClaimFreeAttemptsModal =
+    canClaimFree && !claimModalDismissedToday;
+
+  const dismissClaimFreeAttemptsModal = () => {
+    try {
+      sessionStorage.setItem(
+        CLAIM_FREE_MODAL_DISMISS_KEY,
+        new Date().toISOString().slice(0, 10),
+      );
+    } catch {
+      // ignore
+    }
+    setClaimModalDismissedToday(true);
+  };
+
+  const claimFreeAttempts = () => {
+    clearApiError();
+    dispatchAction({ action: CLAIM_FREE_ATTEMPTS_ACTION });
+  };
 
   const nuggetJob = useMemo(
     () => findNuggetJob(minigame.producing),
@@ -77,6 +127,15 @@ export const ChickenRescueHome: React.FC = () => {
       <CluckcoinShopModal
         show={cluckcoinShopOpen}
         onClose={() => setCluckcoinShopOpen(false)}
+      />
+
+      <ClaimFreeAttemptsModal
+        show={showClaimFreeAttemptsModal}
+        freeAttemptsCount={freeAttemptsMintAmount}
+        apiError={apiError}
+        onClaim={claimFreeAttempts}
+        onDismiss={dismissClaimFreeAttemptsModal}
+        onClearError={clearApiError}
       />
 
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-28 z-10 gap-2">
