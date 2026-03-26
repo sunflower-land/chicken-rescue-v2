@@ -1,7 +1,6 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
-@import "./resourceNodeAnimations.css";
 @layer utilities {
   .text-shadow {
     text-shadow: 0px 1px #714431;

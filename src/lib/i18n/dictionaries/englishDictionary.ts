@@ -5683,7 +5683,7 @@ const minigame: Record<Minigame, string> = {
   "minigame.cluckcoinBalanceForUnlock":
     "You have {{count}} Cluckcoin. Spend one to unlock a play attempt.",
   "minigame.getCluckcoinOnMarketplace":
-    "You need Cluckcoin to buy attempts. Use the + next to Cluckcoin in the top corner to learn how to trade on the marketplace.",
+    "You need Cluckcoin to buy attempts. Tap the shop above the chicken to swap Nuggets or open the marketplace.",
 };
 
 export const easterEggTerms: Record<EasterEggKeys, string> = {

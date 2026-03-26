@@ -5,17 +5,15 @@ import { Panel } from "components/ui/Panel";
 import { Button } from "components/ui/Button";
 import { Label } from "components/ui/Label";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { ITEM_DETAILS } from "features/game/types/images";
+import chookIcon from "assets/icons/chook.webp";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { NPC_WEARABLES } from "lib/npcs";
 import lock from "assets/icons/lock.png";
-import {
-  attemptsFromMinigame,
-} from "./lib/chickenRescueMachine";
+import { attemptsFromMinigame } from "./lib/chickenRescueMachine";
 import {
   chickenRescueHomeRootStyle,
   coopFeedProgressBarWidthPx,
-  fatChickenDisplayWidthPx,
+  chookDisplayWidthPx,
 } from "./lib/chickenRescueHomeLayout";
 import {
   findNuggetJob,
@@ -23,6 +21,7 @@ import {
   useNowTicker,
 } from "./lib/chickenRescueNugget";
 import { useChickenRescueSession } from "./lib/ChickenRescueSessionContext";
+import { CluckcoinShopModal } from "./components/CluckcoinShopModal";
 import { goHome } from "./lib/chickenRescueExit";
 import { ChickenRescueHomeHUD } from "./components/ChickenRescueHomeHUD";
 import {
@@ -34,11 +33,12 @@ import { ChickenRescueCoopPanel } from "./components/ChickenRescueCoopPanel";
 export const ChickenRescueHome: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useAppTranslation();
-  const { minigame, dispatchAction } = useChickenRescueSession();
+  const { minigame, dispatchAction, clearApiError } = useChickenRescueSession();
   const now = useNowTicker();
 
   const [playModalOpen, setPlayModalOpen] = useState(false);
   const [coopModalOpen, setCoopModalOpen] = useState(false);
+  const [cluckcoinShopOpen, setCluckcoinShopOpen] = useState(false);
 
   const attemptsLeft = attemptsFromMinigame(minigame);
   const cluckcoin = minigame.balances.Cluckcoin ?? 0;
@@ -47,13 +47,10 @@ export const ChickenRescueHome: React.FC = () => {
     () => findNuggetJob(minigame.producing),
     [minigame.producing],
   );
-  const nuggetReady =
-    nuggetJob !== null && now >= nuggetJob.completesAt;
+  const nuggetReady = nuggetJob !== null && now >= nuggetJob.completesAt;
   const nuggetCooking = nuggetJob !== null && !nuggetReady;
   const cookProgressPct =
-    nuggetJob && nuggetCooking
-      ? nuggetCookProgressPercent(nuggetJob, now)
-      : 0;
+    nuggetJob && nuggetCooking ? nuggetCookProgressPercent(nuggetJob, now) : 0;
 
   const startRun = () => {
     const ok = dispatchAction({ action: "START" });
@@ -67,6 +64,11 @@ export const ChickenRescueHome: React.FC = () => {
     dispatchAction({ action: "BUY_RUNS" });
   };
 
+  const openCluckcoinShop = () => {
+    clearApiError();
+    setCluckcoinShopOpen(true);
+  };
+
   return (
     <div
       className="relative min-h-screen w-full overflow-hidden [image-rendering:pixelated]"
@@ -74,7 +76,25 @@ export const ChickenRescueHome: React.FC = () => {
     >
       <ChickenRescueHomeHUD />
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-28 z-10">
+      <CluckcoinShopModal
+        show={cluckcoinShopOpen}
+        onClose={() => setCluckcoinShopOpen(false)}
+      />
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-28 z-10 gap-3">
+        <button
+          type="button"
+          className="pointer-events-auto rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-900/60 p-0.5"
+          onClick={openCluckcoinShop}
+          aria-label={t("minigame.cluckcoinMarketplaceTitle")}
+        >
+          <img
+            src={SUNNYSIDE.icons.shop}
+            alt=""
+            className="w-12 h-12 sm:w-14 sm:h-14 pixelated drop-shadow-md opacity-95 hover:opacity-100 transition-opacity"
+            style={{ imageRendering: "pixelated" }}
+          />
+        </button>
         <button
           type="button"
           className="pointer-events-auto flex flex-col items-center gap-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-900/60"
@@ -91,11 +111,11 @@ export const ChickenRescueHome: React.FC = () => {
               />
             )}
             <img
-              src={ITEM_DETAILS["Fat Chicken"].image}
+              src={chookIcon}
               alt=""
               className="max-w-none pixelated drop-shadow-lg opacity-90 hover:opacity-100 transition-opacity"
               style={{
-                width: fatChickenDisplayWidthPx(),
+                width: chookDisplayWidthPx(),
                 height: "auto",
                 imageRendering: "pixelated",
               }}
@@ -133,9 +153,7 @@ export const ChickenRescueHome: React.FC = () => {
 
       {coopModalOpen && (
         <Modal show>
-          <ChickenRescueCoopPanel
-            onClose={() => setCoopModalOpen(false)}
-          />
+          <ChickenRescueCoopPanel onClose={() => setCoopModalOpen(false)} />
         </Modal>
       )}
 
@@ -187,10 +205,7 @@ export const ChickenRescueHome: React.FC = () => {
               >
                 {t("minigame.spendCluckcoinForAttempt")}
               </Button>
-              <Button
-                className="ml-1"
-                onClick={() => setPlayModalOpen(false)}
-              >
+              <Button className="ml-1" onClick={() => setPlayModalOpen(false)}>
                 {t("close")}
               </Button>
             </div>
