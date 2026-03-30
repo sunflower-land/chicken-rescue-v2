@@ -312,10 +312,10 @@ export class ChickenRescueScene extends BaseScene {
       this.scene.restart();
     };
 
-    this.game.events.on("chicken-rescue-retry", onRetry);
+    this.game.events.on("chicken-rescue-v2-retry", onRetry);
 
     this.events.on("shutdown", () => {
-      this.game.events.off("chicken-rescue-retry", onRetry);
+      this.game.events.off("chicken-rescue-v2-retry", onRetry);
     });
   }
 

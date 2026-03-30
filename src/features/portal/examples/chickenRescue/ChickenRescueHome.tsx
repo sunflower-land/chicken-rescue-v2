@@ -19,8 +19,8 @@ import { ChickenRescueHomeHUD } from "./components/ChickenRescueHomeHUD";
 
 function sunflowerLandChickenRescueDashboardUrl(): string {
   const base = (CONFIG.PORTAL_GAME_URL ?? "").replace(/\/$/, "");
-  if (!base) return "/minigame/chicken-rescue";
-  return `${base}/minigame/chicken-rescue`;
+  if (!base) return "/minigame/chicken-rescue-v2";
+  return `${base}/minigame/chicken-rescue-v2`;
 }
 
 export const ChickenRescueHome: React.FC = () => {
