@@ -5825,6 +5825,20 @@ const minigame: Record<Minigame, string> = {
   "minigame.chooksScoreHud": ENGLISH_TERMS["minigame.chooksScoreHud"],
   "minigame.chickenRescueRunComplete":
     ENGLISH_TERMS["minigame.chickenRescueRunComplete"],
+  "minigame.chickenRescue.collectChooksTitle":
+    ENGLISH_TERMS["minigame.chickenRescue.collectChooksTitle"],
+  "minigame.chickenRescue.welcomeBody":
+    ENGLISH_TERMS["minigame.chickenRescue.welcomeBody"],
+  "minigame.chickenRescue.gameOver":
+    ENGLISH_TERMS["minigame.chickenRescue.gameOver"],
+  "minigame.chickenRescue.resultsFoundChooks":
+    ENGLISH_TERMS["minigame.chickenRescue.resultsFoundChooks"],
+  "minigame.chickenRescue.resultsNoChooks":
+    ENGLISH_TERMS["minigame.chickenRescue.resultsNoChooks"],
+  "minigame.chickenRescue.foundChooksLine":
+    ENGLISH_TERMS["minigame.chickenRescue.foundChooksLine"],
+  "minigame.chickenRescue.foundGoldenChooksLine":
+    ENGLISH_TERMS["minigame.chickenRescue.foundGoldenChooksLine"],
   "minigame.collectNugget": ENGLISH_TERMS["minigame.collectNugget"],
   "minigame.nuggetReady": ENGLISH_TERMS["minigame.nuggetReady"],
   "minigame.nuggetCooking": ENGLISH_TERMS["minigame.nuggetCooking"],

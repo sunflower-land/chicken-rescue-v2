@@ -23,7 +23,7 @@ export const CHICKEN_RESCUE_CLIENT_ACTIONS: Record<
       Worm: { amount: 3 },
     },
   },
-  BUY_MOSS_WORMERY: {
+  BUY_WORMERY_2: {
     burn: {
       GoldenNugget: { amount: 15 },
     },
@@ -31,7 +31,7 @@ export const CHICKEN_RESCUE_CLIENT_ACTIONS: Record<
       Wormery_2: { amount: 1 },
     },
   },
-  BUY_GLOW_WORMERY: {
+  BUY_WORMERY_3: {
     burn: {
       GoldenNugget: { amount: 100 },
     },
@@ -39,7 +39,7 @@ export const CHICKEN_RESCUE_CLIENT_ACTIONS: Record<
       Wormery_3: { amount: 1 },
     },
   },
-  BUY_GRAND_WORMERY: {
+  BUY_WORMERY_4: {
     burn: {
       GoldenNugget: { amount: 500 },
     },
@@ -47,7 +47,7 @@ export const CHICKEN_RESCUE_CLIENT_ACTIONS: Record<
       Wormery_4: { amount: 1 },
     },
   },
-  START_MOSS_WORMERY_DROP: {
+  START_WORMERY_2_DROP: {
     produce: {
       Worm: {
         msToComplete: EIGHT_HOURS_MS,
@@ -56,12 +56,12 @@ export const CHICKEN_RESCUE_CLIENT_ACTIONS: Record<
       },
     },
   },
-  COLLECT_MOSS_WORMERY_WORMS: {
+  COLLECT_WORMERY_2_WORMS: {
     collect: {
       Worm: { amount: 3 },
     },
   },
-  START_GLOW_WORMERY_DROP: {
+  START_WORMERY_3_DROP: {
     produce: {
       Worm: {
         msToComplete: EIGHT_HOURS_MS,
@@ -70,12 +70,12 @@ export const CHICKEN_RESCUE_CLIENT_ACTIONS: Record<
       },
     },
   },
-  COLLECT_GLOW_WORMERY_WORMS: {
+  COLLECT_WORMERY_3_WORMS: {
     collect: {
       Worm: { amount: 3 },
     },
   },
-  START_GRAND_WORMERY_DROP: {
+  START_WORMERY_4_DROP: {
     produce: {
       Worm: {
         msToComplete: EIGHT_HOURS_MS,
@@ -84,7 +84,7 @@ export const CHICKEN_RESCUE_CLIENT_ACTIONS: Record<
       },
     },
   },
-  COLLECT_GRAND_WORMERY_WORMS: {
+  COLLECT_WORMERY_4_WORMS: {
     collect: {
       Worm: { amount: 3 },
     },

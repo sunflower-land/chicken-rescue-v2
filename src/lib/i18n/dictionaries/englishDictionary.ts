@@ -5693,6 +5693,17 @@ const minigame: Record<Minigame, string> = {
   "minigame.chooksScoreHud": "Chooks: {{count}}",
   "minigame.chickenRescueRunComplete":
     "Congratulations! You rescued {{rescued}} chooks and earned {{earned}} chooks.",
+  "minigame.chickenRescue.collectChooksTitle": "Collect chooks",
+  "minigame.chickenRescue.welcomeBody":
+    "Pssst, are you looking for chooks? Use your worms and chicken feet to attract and catch them. Shops and wormeries are in Sunflower Land.",
+  "minigame.chickenRescue.gameOver": "Game over",
+  "minigame.chickenRescue.resultsFoundChooks":
+    "Congratulations, you found some chooks.",
+  "minigame.chickenRescue.resultsNoChooks":
+    "Bad luck, you didn't catch any chooks.",
+  "minigame.chickenRescue.foundChooksLine": "You found {{count}} chooks.",
+  "minigame.chickenRescue.foundGoldenChooksLine":
+    "You found {{count}} golden chooks.",
   "minigame.collectNugget": "Collect chicken feet",
   "minigame.nuggetReady": "Your Chicken Feet are ready to collect.",
   "minigame.nuggetCooking": "Cooking… {{seconds}}s left",

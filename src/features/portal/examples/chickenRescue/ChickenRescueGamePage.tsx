@@ -11,7 +11,9 @@ import { Modal } from "components/ui/Modal";
 import { Panel } from "components/ui/Panel";
 import { Button } from "components/ui/Button";
 import { Label } from "components/ui/Label";
-import { SUNNYSIDE } from "assets/sunnyside";
+import { Box } from "components/ui/Box";
+import chookIcon from "assets/icons/chook.webp";
+import goldenChookIcon from "assets/sfts/golden_chook.png";
 import { NPC_WEARABLES } from "lib/npcs";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import {
@@ -24,7 +26,7 @@ import { GameRunProvider } from "./lib/GameRunContext";
 import { defaultPhaserHandlers } from "./lib/chickenRescuePhaserApi";
 import type { ChickenRescuePhaserApiRef } from "./lib/chickenRescuePhaserApi";
 import { ChickenRescueGame } from "./ChickenRescueGame";
-import type { ChickenRescueRunType } from "./ChickenRescueGame";
+import type { ChickenRescueRunType } from "./lib/GameRunContext";
 import { ChickenRescueHUD } from "./components/ChickenRescueHUD";
 
 export const ChickenRescueGamePage: React.FC = () => {
@@ -112,8 +114,9 @@ export const ChickenRescueGamePage: React.FC = () => {
       goldenCount,
       setScore,
       endAt,
+      runType,
     }),
-    [score, goldenCount, endAt],
+    [score, goldenCount, endAt, runType],
   );
 
   return (
@@ -124,33 +127,44 @@ export const ChickenRescueGamePage: React.FC = () => {
           farmId={farmId}
           phaserApiRef={phaserApiRef}
           runType={runType}
-          initialGoldenChooks={minigame.balances.GoldenChook ?? 0}
         />
         {runEnd === "playing" && <ChickenRescueHUD />}
 
         {runEnd === "results" && (
           <Modal show>
-            <Panel bumpkinParts={NPC_WEARABLES.grubnuk}>
+            <Panel bumpkinParts={NPC_WEARABLES["pumpkin' pete"]}>
               <div className="p-1">
-                <div className="w-full flex justify-between items-start mb-2">
-                  <Label type="success" icon={SUNNYSIDE.icons.confirm}>
-                    {t("minigame.missionComplete")}
-                  </Label>
-                </div>
-                <p className="text-sm mb-2">
-                  {t("minigame.chickenRescueRunComplete", {
-                    rescued: score,
-                    earned: chooksEarned,
-                  })}
+                <Label type="default" className="mb-2">
+                  {t("minigame.chickenRescue.gameOver")}
+                </Label>
+                <p className="text-sm mb-2 text-[#3e2731]">
+                  {chooksEarned > 0
+                    ? t("minigame.chickenRescue.resultsFoundChooks")
+                    : t("minigame.chickenRescue.resultsNoChooks")}
                 </p>
-                {runType === "advanced" && (
-                  <p className="text-xs mb-1">
-                    Golden chooks rescued: {goldenCount}
-                  </p>
-                )}
+                <div className="flex flex-col gap-2 mb-1">
+                  <div className="flex flex-row items-center gap-2">
+                    <Box image={chookIcon} hideCount />
+                    <span className="text-xs text-[#3e2731]">
+                      {t("minigame.chickenRescue.foundChooksLine", {
+                        count: chooksEarned,
+                      })}
+                    </span>
+                  </div>
+                  {runType === "advanced" && (
+                    <div className="flex flex-row items-center gap-2">
+                      <Box image={goldenChookIcon} hideCount />
+                      <span className="text-xs text-[#3e2731]">
+                        {t("minigame.chickenRescue.foundGoldenChooksLine", {
+                          count: goldenCount,
+                        })}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
               <Button className="mt-1 w-full" onClick={onClaim}>
-                {t("claim")}
+                {t("continue")}
               </Button>
             </Panel>
           </Modal>

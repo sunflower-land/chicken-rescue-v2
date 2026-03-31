@@ -6,8 +6,9 @@ import VirtualJoystickPlugin from "phaser3-rex-plugins/plugins/virtualjoystick-p
 import { Preloader } from "features/world/scenes/Preloader";
 import { ChickenRescueScene } from "./ChickenRescueScene";
 import type { ChickenRescuePhaserApiRef } from "./lib/chickenRescuePhaserApi";
+import type { ChickenRescueRunType } from "./lib/GameRunContext";
 
-export type ChickenRescueRunType = "basic" | "advanced";
+export type { ChickenRescueRunType };
 
 export const ChickenRescueGame: React.FC<{
   bumpkin: unknown;
@@ -15,14 +16,12 @@ export const ChickenRescueGame: React.FC<{
   phaserApiRef: ChickenRescuePhaserApiRef;
   /** From URL `?run=` — drives Phaser spawns and golden chook rules. */
   runType: ChickenRescueRunType;
-  initialGoldenChooks: number;
   onGameReady?: (game: Game) => void;
 }> = ({
   bumpkin,
   farmId,
   phaserApiRef,
   runType,
-  initialGoldenChooks,
   onGameReady,
 }) => {
   const game = useRef<Game>();
@@ -83,14 +82,13 @@ export const ChickenRescueGame: React.FC<{
     game.current.registry.set("id", farmId);
     game.current.registry.set("phaserApiRef", phaserApiRef);
     game.current.registry.set("chickenRunType", runType);
-    game.current.registry.set("initialGoldenChooks", initialGoldenChooks);
 
     onGameReady?.(game.current);
 
     return () => {
       game.current?.destroy(true);
     };
-  }, [bumpkin, farmId, phaserApiRef, runType, initialGoldenChooks]);
+  }, [bumpkin, farmId, phaserApiRef, runType]);
 
   const ref = useRef<HTMLDivElement>(null);
 

@@ -11,17 +11,10 @@ import chickenFeetIcon from "assets/icons/chicken_feet.webp";
 import goldenChookIcon from "assets/sfts/golden_chook.png";
 import wormIcon from "assets/icons/worm.png";
 import { SUNNYSIDE } from "assets/sunnyside";
-import { CONFIG } from "lib/config";
 import { wormsFromMinigame } from "./lib/chickenRescueMachine";
 import { chickenRescueHomeRootStyle } from "./lib/chickenRescueHomeLayout";
 import { closePortal, useMinigameSession } from "lib/portal";
 import { ChickenRescueHomeHUD } from "./components/ChickenRescueHomeHUD";
-
-function sunflowerLandChickenRescueDashboardUrl(): string {
-  const base = (CONFIG.PORTAL_GAME_URL ?? "").replace(/\/$/, "");
-  if (!base) return "/minigame/chicken-rescue-v2";
-  return `${base}/minigame/chicken-rescue-v2`;
-}
 
 export const ChickenRescueHome: React.FC = () => {
   const navigate = useNavigate();
@@ -38,8 +31,6 @@ export const ChickenRescueHome: React.FC = () => {
   const chickenFeet = minigame.balances.ChickenFeet ?? 0;
   const canStartBasic = wormsLeft >= 1;
   const canStartAdvanced = chickenFeet >= 1;
-
-  const productionUrl = sunflowerLandChickenRescueDashboardUrl();
 
   const startBasicRun = () => {
     const ok = dispatchAction({ action: "START" });
@@ -84,22 +75,13 @@ export const ChickenRescueHome: React.FC = () => {
 
       {huntStep === "choose" && (
         <Modal show>
-          <Panel>
+          <Panel bumpkinParts={NPC_WEARABLES["pumpkin' pete"]}>
             <div className="p-2">
               <Label type="default" className="mb-2" icon={SUNNYSIDE.icons.search}>
-                Which run?
+                {t("minigame.chickenRescue.collectChooksTitle")}
               </Label>
-              <p className="text-xs leading-snug mb-3 opacity-90">
-                Shops and timed coin drops live in the main game.{" "}
-                <a
-                  href={productionUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline font-medium text-amber-900"
-                >
-                  Open Chicken Rescue in Sunflower Land
-                </a>{" "}
-                to manage them.
+              <p className="text-xs leading-snug mb-3 opacity-90 text-[#3e2731]">
+                {t("minigame.chickenRescue.welcomeBody")}
               </p>
               <ul className="flex flex-col gap-1.5">
                 <li>
@@ -179,7 +161,7 @@ export const ChickenRescueHome: React.FC = () => {
 
       {huntStep === "confirm" && pendingRun !== null && (
         <Modal show>
-          <Panel bumpkinParts={NPC_WEARABLES.grubnuk}>
+          <Panel bumpkinParts={NPC_WEARABLES["pumpkin' pete"]}>
             <div className="p-2">
               <p className="text-sm mb-3">
                 Are you sure you want to continue? It will cost{" "}

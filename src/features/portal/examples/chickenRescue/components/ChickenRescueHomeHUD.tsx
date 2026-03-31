@@ -17,6 +17,9 @@ export const ChickenRescueHomeHUD: React.FC = () => {
   const chickenFeet = minigame.balances.ChickenFeet ?? 0;
   const worms = minigame.balances.Worm ?? 0;
 
+  const showGoldenChookBalance =
+    chickenFeet > 0 || goldenChooks > 0;
+
   return (
     <div className="absolute top-4 right-4 z-20 flex items-start gap-3 pointer-events-none">
       <div className="flex flex-col items-end gap-1 flex-shrink-0 pointer-events-auto">
@@ -44,12 +47,14 @@ export const ChickenRescueHomeHUD: React.FC = () => {
           showCountIfZero
           className="flex-shrink-0"
         />
-        <Box
-          image={goldenChookIcon}
-          count={new Decimal(goldenChooks)}
-          showCountIfZero
-          className="flex-shrink-0"
-        />
+        {showGoldenChookBalance && (
+          <Box
+            image={goldenChookIcon}
+            count={new Decimal(goldenChooks)}
+            showCountIfZero
+            className="flex-shrink-0"
+          />
+        )}
       </div>
     </div>
   );

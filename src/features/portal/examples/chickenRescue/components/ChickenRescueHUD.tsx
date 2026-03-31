@@ -6,52 +6,28 @@ import worldIcon from "assets/icons/world.png";
 import { HudContainer } from "components/ui/HudContainer";
 import { useAppTranslation } from "lib/i18n/useAppTranslations";
 import { isTouchDevice } from "features/world/lib/device";
-import { useGameRun } from "../lib/GameRunContext";
 
 export const ChickenRescueHUD: React.FC = () => {
-  const { score, goldenCount } = useGameRun();
   const navigate = useNavigate();
   const { t } = useAppTranslation();
 
   const [showMoveHint, setShowMoveHint] = useState(true);
 
   useEffect(() => {
-    if (score > 0) {
-      setShowMoveHint(false);
-    }
-  }, [score]);
-
-  useEffect(() => {
     const id = window.setTimeout(() => setShowMoveHint(false), 5000);
-    return () => window.clearTimeout(id);
+    const onFirstChook = () => setShowMoveHint(false);
+    window.addEventListener("chicken-rescue-dismiss-move-hint", onFirstChook);
+    return () => {
+      window.clearTimeout(id);
+      window.removeEventListener(
+        "chicken-rescue-dismiss-move-hint",
+        onFirstChook,
+      );
+    };
   }, []);
 
   return (
     <HudContainer>
-      <div className="absolute top-4 left-4 pointer-events-none">
-        <div className="relative">
-          <div className="h-10 w-full bg-black opacity-30 absolute coins-bb-hud-backdrop-reverse" />
-          <div
-            className="flex flex-col z-10 absolute"
-            style={{
-              width: "160px",
-              paddingTop: "3px",
-              paddingLeft: "3px",
-            }}
-          >
-            <span className="balance-text">
-              {t("minigame.chooksScoreHud", { count: score })}
-            </span>
-            <span
-              className="balance-text"
-              style={{ color: "#facc15", textShadow: "1px 1px 0 #7c5f00" }}
-            >
-              Golden Chooks: {goldenCount}
-            </span>
-          </div>
-        </div>
-      </div>
-
       <div
         className="fixed z-50 flex flex-col justify-between"
         style={{

@@ -1,5 +1,6 @@
 import mapJson from "assets/map/chicken_rescue.json";
 import goldenChookSleeping from "assets/sfts/golden_chook.png";
+import chookHudAsset from "assets/icons/chook.webp";
 import { SceneId } from "features/world/mmoMachine";
 import { BaseScene, WALKING_SPEED } from "features/world/scenes/BaseScene";
 import { ChickenContainer } from "./ChickenContainer";
@@ -34,6 +35,14 @@ const FENCE_BOUNDS: BoundingBox = {
 
 const MAX_CHICKENS = 200;
 
+/** First golden sleeping chook after this many regular chooks rescued (advanced only). */
+const FIRST_GOLDEN_AT_REGULAR_COUNT = 5;
+/** Each subsequent golden after this many more regular chooks (5 → 25 → 45 …). */
+const GOLDEN_REGULAR_INTERVAL = 20;
+
+/** Max golden chooks collectible in one run (not tied to farm inventory). */
+const MAX_GOLDEN_CHOOKS_PER_RUN = 3;
+
 export class ChickenRescueScene extends BaseScene {
   sceneId: SceneId = "chicken_rescue";
 
@@ -65,8 +74,16 @@ export class ChickenRescueScene extends BaseScene {
     moveTo?: Coordinates;
   }[] = [];
   private goldenRescued = 0;
-  private nextGoldenSpawnAtScore = 3;
-  private startingGoldenChooks = 0;
+  /** Regular (non-golden) chooks rescued this run — shown above the player. */
+  private regularRescuedCount = 0;
+  /** Next golden spawns when `regularRescuedCount` reaches this (then += GOLDEN_REGULAR_INTERVAL). */
+  private nextGoldenSpawnAtRegular = FIRST_GOLDEN_AT_REGULAR_COUNT;
+
+  private playerCollectHud?: Phaser.GameObjects.Container;
+  private chookHudIcon?: Phaser.GameObjects.Image;
+  private chookHudText?: Phaser.GameObjects.BitmapText;
+  private goldenHudIcon?: Phaser.GameObjects.Image;
+  private goldenHudText?: Phaser.GameObjects.BitmapText;
 
   constructor() {
     super({
@@ -91,12 +108,8 @@ export class ChickenRescueScene extends BaseScene {
     return this.runType === "advanced";
   }
 
-  private get runStartingGoldenChooks() {
-    return this.startingGoldenChooks;
-  }
-
   private get goldenRunCap() {
-    return Math.max(0, 3 - this.runStartingGoldenChooks);
+    return MAX_GOLDEN_CHOOKS_PER_RUN;
   }
 
   private get activeGoldenInWild() {
@@ -131,6 +144,7 @@ export class ChickenRescueScene extends BaseScene {
     });
 
     this.load.image("golden_sleeping_chook", goldenChookSleeping);
+    this.load.image("cr_hud_chook", chookHudAsset);
 
     this.load.audio("game_over", SOUNDS.notifications.maze_over);
     this.load.audio("chicken_1", SOUNDS.resources.chicken_1);
@@ -229,9 +243,9 @@ export class ChickenRescueScene extends BaseScene {
     this.sleeping = [];
     this.goblins = [];
     this.isDead = false;
-    this.startingGoldenChooks = this.registry.get("initialGoldenChooks") ?? 0;
     this.goldenRescued = 0;
-    this.nextGoldenSpawnAtScore = 3;
+    this.regularRescuedCount = 0;
+    this.nextGoldenSpawnAtRegular = FIRST_GOLDEN_AT_REGULAR_COUNT;
     this.walkingSpeed = this.isAdvancedRun ? WALKING_SPEED * 2 : WALKING_SPEED;
 
     // Create initial objects
@@ -317,6 +331,122 @@ export class ChickenRescueScene extends BaseScene {
     this.events.on("shutdown", () => {
       this.game.events.off("chicken-rescue-v2-retry", onRetry);
     });
+
+    this.createPlayerCollectHud();
+  }
+
+  private createPlayerCollectHud() {
+    const iconScale = 0.4;
+    const hudFontSize = 5;
+    this.chookHudIcon = this.add
+      .image(0, 0, "cr_hud_chook")
+      .setScale(iconScale)
+      .setOrigin(0.5, 0.5);
+    this.chookHudText = this.add
+      .bitmapText(0, 0, "Teeny Tiny Pixls", "0", hudFontSize)
+      .setOrigin(0, 0.5);
+
+    this.goldenHudIcon = this.add
+      .image(0, 0, "golden_sleeping_chook")
+      .setScale(iconScale)
+      .setOrigin(0.5, 0.5);
+    this.goldenHudText = this.add
+      .bitmapText(0, 0, "Teeny Tiny Pixls", "0", hudFontSize)
+      .setOrigin(0, 0.5)
+      .setTint(0xfff3a0);
+
+    this.playerCollectHud = this.add.container(0, 0, [
+      this.chookHudIcon,
+      this.chookHudText,
+      this.goldenHudIcon,
+      this.goldenHudText,
+    ]);
+    this.playerCollectHud.setDepth(1000000001);
+    this.playerCollectHud.setVisible(false);
+  }
+
+  private updatePlayerCollectHud() {
+    if (
+      !this.currentPlayer ||
+      !this.playerCollectHud ||
+      !this.chookHudIcon ||
+      !this.chookHudText ||
+      !this.goldenHudIcon ||
+      !this.goldenHudText
+    ) {
+      return;
+    }
+
+    const regular = this.regularRescuedCount;
+    const golden = this.goldenRescued;
+    const show = regular > 0 || golden > 0;
+    this.playerCollectHud.setVisible(show);
+
+    if (!show) {
+      return;
+    }
+
+    const chI = this.chookHudIcon;
+    const chT = this.chookHudText;
+    const gI = this.goldenHudIcon;
+    const gT = this.goldenHudText;
+
+    const gap = 3;
+    const padBetweenGroups = 6;
+
+    chT.setText(String(regular));
+    gT.setText(String(golden));
+
+    type Seg = "regular" | "golden";
+    const segments: Seg[] = [];
+    if (regular > 0) segments.push("regular");
+    if (golden > 0) segments.push("golden");
+
+    const widthOf = (seg: Seg): number => {
+      if (seg === "regular") {
+        return chI.displayWidth + gap + chT.width;
+      }
+      return gI.displayWidth + gap + gT.width;
+    };
+
+    let totalW = 0;
+    segments.forEach((seg, i) => {
+      totalW += widthOf(seg);
+      if (i < segments.length - 1) {
+        totalW += padBetweenGroups;
+      }
+    });
+
+    let x = -totalW / 2;
+
+    chI.setVisible(regular > 0);
+    chT.setVisible(regular > 0);
+    gI.setVisible(golden > 0);
+    gT.setVisible(golden > 0);
+
+    segments.forEach((seg, i) => {
+      if (seg === "regular") {
+        const half = chI.displayWidth / 2;
+        chI.setPosition(x + half, 0);
+        x += chI.displayWidth + gap;
+        chT.setPosition(x, 0);
+        x += chT.width;
+      } else {
+        const half = gI.displayWidth / 2;
+        gI.setPosition(x + half, 0);
+        x += gI.displayWidth + gap;
+        gT.setPosition(x, 0);
+        x += gT.width;
+      }
+      if (i < segments.length - 1) {
+        x += padBetweenGroups;
+      }
+    });
+
+    this.playerCollectHud.setPosition(
+      this.currentPlayer.x,
+      this.currentPlayer.y - 12,
+    );
   }
 
   getBoundingBoxes(): BoundingBox[] {
@@ -640,10 +770,10 @@ export class ChickenRescueScene extends BaseScene {
       this.goldenRunCap > 0 &&
       this.remainingGoldenToCollect > 0 &&
       this.activeGoldenInWild < this.remainingGoldenToCollect &&
-      this.score >= this.nextGoldenSpawnAtScore;
+      this.regularRescuedCount >= this.nextGoldenSpawnAtRegular;
     const isGolden = canSpawnGolden;
     if (isGolden) {
-      this.nextGoldenSpawnAtScore += 20;
+      this.nextGoldenSpawnAtRegular += GOLDEN_REGULAR_INTERVAL;
     }
 
     const chicken = new SleepingChickenContainer({
@@ -748,6 +878,7 @@ export class ChickenRescueScene extends BaseScene {
     if (this.isDead) return;
 
     this.isDead = true;
+    this.playerCollectHud?.setVisible(false);
 
     (this.currentPlayer?.body as Phaser.Physics.Arcade.Body).setVelocity(0, 0);
 
@@ -812,6 +943,11 @@ export class ChickenRescueScene extends BaseScene {
 
     if (isGolden) {
       this.goldenRescued += 1;
+    } else {
+      this.regularRescuedCount += 1;
+    }
+    if (this.regularRescuedCount + this.goldenRescued === 1) {
+      window.dispatchEvent(new CustomEvent("chicken-rescue-dismiss-move-hint"));
     }
     this.phaserApiRef?.current.onChickenRescued(1, { golden: isGolden });
 
@@ -1208,6 +1344,7 @@ export class ChickenRescueScene extends BaseScene {
     this.moveGoblins();
 
     this.currentPlayer?.setDepth(1000000000);
+    this.updatePlayerCollectHud();
   }
 
   debug() {
