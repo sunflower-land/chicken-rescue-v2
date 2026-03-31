@@ -45,12 +45,25 @@ function readPersistedApiOrigin(): string | undefined {
   }
 }
 
+function persistPortalApiOrigin(origin: string) {
+  try {
+    sessionStorage.setItem(
+      PORTAL_API_ORIGIN_STORAGE_KEY,
+      normalizeApiBase(origin),
+    );
+  } catch {
+    // private mode / quota
+  }
+}
+
 /**
  * Resolves the Sunflower Land API base URL for portal/minigame requests.
- * 1. `apiUrl` query param (from parent iframe) when valid — persisted for this tab so
- *    client-side navigation without query params still hits the same API as the parent.
- * 2. Previously persisted origin from an earlier load with `apiUrl`.
- * 3. `network` + build-time fallbacks.
+ * 1. `apiUrl` query param (from parent iframe) when valid — persisted in sessionStorage
+ *    under `sunflower_land_portal_api_origin`.
+ * 2. Previously persisted origin from an earlier load.
+ * 3. `network` query param (`mainnet` → prod API, else dev) — also persisted so SPA
+ *    navigations match JWT behaviour (parent always sends `network`; may omit `apiUrl`).
+ * 4. Build-time `CONFIG.API_URL` fallback.
  */
 export const getUrl = () => {
   const params = new URLSearchParams(window.location.search);
@@ -59,11 +72,7 @@ export const getUrl = () => {
     const raw = params.get("apiUrl") ?? "";
     const fromQuery = parseApiUrlParam(raw);
     if (fromQuery) {
-      try {
-        sessionStorage.setItem(PORTAL_API_ORIGIN_STORAGE_KEY, fromQuery);
-      } catch {
-        // private mode / quota
-      }
+      persistPortalApiOrigin(fromQuery);
       return fromQuery;
     }
     if (raw.trim() === "") {
@@ -83,11 +92,15 @@ export const getUrl = () => {
   const network = params.get("network")?.toLowerCase() ?? "";
 
   if (network === "mainnet") {
-    return "https://api.sunflower-land.com";
+    const base = "https://api.sunflower-land.com";
+    persistPortalApiOrigin(base);
+    return base;
   }
 
   if (network) {
-    return "https://api-dev.sunflower-land.com";
+    const base = "https://api-dev.sunflower-land.com";
+    persistPortalApiOrigin(base);
+    return base;
   }
 
   return typeof CONFIG.API_URL === "string"
