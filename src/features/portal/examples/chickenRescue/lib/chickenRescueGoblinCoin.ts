@@ -1,4 +1,4 @@
-import type { MinigameRuntimeState, ProducingEntry } from "lib/portal/processAction";
+import type { GeneratorJob, MinigameRuntimeState } from "lib/portal/processAction";
 
 export type WormDropJob = {
   id: string;
@@ -9,10 +9,10 @@ export type WormDropJob = {
 };
 
 export function wormDropJobs(
-  producing: MinigameRuntimeState["producing"],
+  generating: MinigameRuntimeState["generating"],
 ): WormDropJob[] {
-  return Object.entries(producing)
-    .filter(([, j]: [string, ProducingEntry]) => j.outputToken === "Worm")
+  return Object.entries(generating)
+    .filter(([, j]: [string, GeneratorJob]) => j.outputToken === "Worm")
     .map(([id, j]) => ({
       id,
       outputToken: j.outputToken,

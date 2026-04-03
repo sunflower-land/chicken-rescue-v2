@@ -1,7 +1,7 @@
 import type { MinigameSessionResponse } from "./types";
 import {
-  emptyMinigameState,
-  processMinigameAction,
+  emptyPlayerEconomyState,
+  processPlayerEconomyAction,
   type MinigameActionDefinition,
   type MinigameConfig,
   type MinigameRuntimeState,
@@ -9,14 +9,14 @@ import {
 } from "./processAction";
 
 export function cloneMinigameSnapshot(
-  m: MinigameSessionResponse["minigame"],
-): MinigameSessionResponse["minigame"] {
+  m: MinigameSessionResponse["playerEconomy"],
+): MinigameSessionResponse["playerEconomy"] {
   const day = utcCalendarDay(Date.now());
   const dm = m.dailyMinted ?? { utcDay: day, minted: {} };
   return {
     balances: { ...m.balances },
-    producing: Object.fromEntries(
-      Object.entries(m.producing).map(([k, v]) => [k, { ...v }]),
+    generating: Object.fromEntries(
+      Object.entries(m.generating).map(([k, v]) => [k, { ...v }]),
     ),
     activity: m.activity,
     dailyActivity: { ...m.dailyActivity },
@@ -25,15 +25,15 @@ export function cloneMinigameSnapshot(
 }
 
 export function minigameSessionToRuntime(
-  m: MinigameSessionResponse["minigame"],
+  m: MinigameSessionResponse["playerEconomy"],
   nowMs: number,
 ): MinigameRuntimeState {
   const day = utcCalendarDay(nowMs);
   const dm = m.dailyMinted ?? { utcDay: day, minted: {} };
   return {
     balances: { ...m.balances },
-    producing: Object.fromEntries(
-      Object.entries(m.producing).map(([k, v]) => [k, { ...v }]),
+    generating: Object.fromEntries(
+      Object.entries(m.generating).map(([k, v]) => [k, { ...v }]),
     ),
     activity: m.activity,
     dailyActivity: { ...m.dailyActivity },
@@ -43,11 +43,11 @@ export function minigameSessionToRuntime(
 
 export function runtimeToMinigameSession(
   r: MinigameRuntimeState,
-): MinigameSessionResponse["minigame"] {
+): MinigameSessionResponse["playerEconomy"] {
   return {
     balances: { ...r.balances },
-    producing: Object.fromEntries(
-      Object.entries(r.producing).map(([k, v]) => [k, { ...v }]),
+    generating: Object.fromEntries(
+      Object.entries(r.generating).map(([k, v]) => [k, { ...v }]),
     ),
     activity: r.activity,
     dailyActivity: { ...r.dailyActivity },
@@ -59,14 +59,14 @@ export function runtimeToMinigameSession(
 }
 
 export function normalizeMinigameFromApi(
-  raw: MinigameSessionResponse["minigame"],
-): MinigameSessionResponse["minigame"] {
+  raw: MinigameSessionResponse["playerEconomy"],
+): MinigameSessionResponse["playerEconomy"] {
   const day = utcCalendarDay(Date.now());
   const dm = raw.dailyMinted ?? { utcDay: day, minted: {} };
   return {
     balances: { ...raw.balances },
-    producing: Object.fromEntries(
-      Object.entries(raw.producing).map(([k, v]) => [k, { ...v }]),
+    generating: Object.fromEntries(
+      Object.entries(raw.generating).map(([k, v]) => [k, { ...v }]),
     ),
     activity: raw.activity,
     dailyActivity: { ...raw.dailyActivity },
@@ -76,7 +76,7 @@ export function normalizeMinigameFromApi(
 
 export function applyOptimisticPortalAction(
   actions: Record<string, unknown>,
-  minigame: MinigameSessionResponse["minigame"],
+  minigame: MinigameSessionResponse["playerEconomy"],
   input: {
     actionId: string;
     amounts?: Record<string, number>;
@@ -84,14 +84,14 @@ export function applyOptimisticPortalAction(
     now?: number;
   },
 ):
-  | { ok: true; minigame: MinigameSessionResponse["minigame"] }
+  | { ok: true; playerEconomy: MinigameSessionResponse["playerEconomy"] }
   | { ok: false; error: string } {
   const now = input.now ?? Date.now();
   const config: MinigameConfig = {
     actions: actions as Record<string, MinigameActionDefinition>,
   };
   const runtime = minigameSessionToRuntime(minigame, now);
-  const result = processMinigameAction(config, runtime, {
+  const result = processPlayerEconomyAction(config, runtime, {
     actionId: input.actionId,
     amounts: input.amounts,
     itemId: input.itemId,
@@ -100,11 +100,11 @@ export function applyOptimisticPortalAction(
   if (!result.ok) {
     return result;
   }
-  return { ok: true, minigame: runtimeToMinigameSession(result.state) };
+  return { ok: true, playerEconomy: runtimeToMinigameSession(result.state) };
 }
 
 export function emptySessionMinigame(
   now = Date.now(),
-): MinigameSessionResponse["minigame"] {
-  return runtimeToMinigameSession(emptyMinigameState(now));
+): MinigameSessionResponse["playerEconomy"] {
+  return runtimeToMinigameSession(emptyPlayerEconomyState(now));
 }

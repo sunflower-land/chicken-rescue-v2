@@ -9,13 +9,13 @@ import goldenChookIcon from "assets/sfts/golden_chook.png";
 import { useMinigameSession } from "lib/portal";
 
 export const ChickenRescueHomeHUD: React.FC = () => {
-  const { minigame } = useMinigameSession();
+  const { playerEconomy } = useMinigameSession();
 
-  const chooks = minigame.balances.Chook ?? 0;
-  const goldenChooks = minigame.balances.GoldenChook ?? 0;
-  const goldenNuggets = minigame.balances.GoldenNugget ?? 0;
-  const chickenFeet = minigame.balances.ChickenFeet ?? 0;
-  const worms = minigame.balances.Worm ?? 0;
+  const chooks = playerEconomy.balances["1"] ?? 0;
+  const goldenChooks = playerEconomy.balances["2"] ?? 0;
+  const goldenNuggets = playerEconomy.balances["0"] ?? 0;
+  const chickenFeet = playerEconomy.balances["3"] ?? 0;
+  const worms = playerEconomy.balances["4"] ?? 0;
 
   const showGoldenChookBalance =
     chickenFeet > 0 || goldenChooks > 0;

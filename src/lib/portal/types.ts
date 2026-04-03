@@ -3,9 +3,9 @@ export type MinigameSessionResponse = {
     balance: string;
     bumpkin?: unknown;
   };
-  minigame: {
+  playerEconomy: {
     balances: Record<string, number>;
-    producing: Record<
+    generating: Record<
       string,
       {
         outputToken: string;
@@ -16,21 +16,26 @@ export type MinigameSessionResponse = {
     >;
     activity: number;
     dailyActivity: { date: string; count: number };
-    /** Present when API returns the extended minigame payload. */
+    /** Present when API returns the extended player economy payload. */
     dailyMinted?: { utcDay: string; minted: Record<string, number> };
   };
   actions: Record<string, unknown>;
 };
 
 export type MinigameActionResponse = {
-  minigame: MinigameSessionResponse["minigame"];
-  producingId?: string;
+  playerEconomy: MinigameSessionResponse["playerEconomy"];
+  generatorJobId?: string;
 };
 
 export type BootstrapContext = {
   id: number;
   jwt: string;
+  /**
+   * Must match `portalId` inside the portal JWT — used for
+   * `GET/POST /portal/:portalId/player-economy`.
+   */
+  portalId: string;
   farm: MinigameSessionResponse["farm"];
-  minigame: MinigameSessionResponse["minigame"];
+  playerEconomy: MinigameSessionResponse["playerEconomy"];
   actions: Record<string, unknown>;
 };

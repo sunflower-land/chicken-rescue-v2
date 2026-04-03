@@ -2,16 +2,48 @@ import { assign, createMachine, Interpreter, State } from "xstate";
 import jwt_decode from "jwt-decode";
 import { CONFIG } from "lib/config";
 import { getUrl, getJwt } from "./url";
-import { getMinigameSession, postMinigameAction } from "./api";
+import { getPlayerEconomySession, postPlayerEconomyAction } from "./api";
 import type { MinigameSessionResponse, BootstrapContext } from "./types";
 import {
   emptySessionMinigame,
   normalizeMinigameFromApi,
 } from "./runtimeHelpers";
 
-function decodeToken(token: string): { farmId?: number } {
-  const decoded = jwt_decode(token) as any;
-  return { ...decoded, ...decoded.properties };
+/**
+ * Portal login JWT includes top-level `farmId` and `portalId` (see API `portals/login`).
+ * Some tokens nest fields under `properties`; merge for compatibility.
+ */
+function decodePortalToken(token: string): {
+  farmId?: number;
+  portalId?: string;
+} {
+  try {
+    const decoded = jwt_decode(token) as Record<string, unknown> & {
+      properties?: Record<string, unknown>;
+    };
+    const merged = {
+      ...decoded,
+      ...(typeof decoded.properties === "object" && decoded.properties !== null
+        ? decoded.properties
+        : {}),
+    } as Record<string, unknown>;
+    const farmRaw = merged.farmId;
+    const farmId =
+      typeof farmRaw === "number"
+        ? farmRaw
+        : typeof farmRaw === "string"
+          ? Number(farmRaw)
+          : undefined;
+    const p = merged.portalId;
+    const portalId =
+      typeof p === "string" && p.trim().length > 0 ? p.trim() : undefined;
+    return {
+      farmId: Number.isFinite(farmId) ? farmId : undefined,
+      portalId,
+    };
+  } catch {
+    return {};
+  }
 }
 
 export type { BootstrapContext };
@@ -40,17 +72,17 @@ async function tryBootstrapAction(
   portalId: string,
   token: string,
   action: string,
-  minigame: MinigameSessionResponse["minigame"],
-): Promise<MinigameSessionResponse["minigame"]> {
+  economy: MinigameSessionResponse["playerEconomy"],
+): Promise<MinigameSessionResponse["playerEconomy"]> {
   try {
-    const { minigame: next } = await postMinigameAction({
+    const { playerEconomy: next } = await postPlayerEconomyAction({
       portalId,
       token,
       action,
     });
     return normalizeMinigameFromApi(next);
   } catch {
-    return minigame;
+    return economy;
   }
 }
 
@@ -66,7 +98,7 @@ export type PortalBootstrapConfig = {
    * When set, used instead of {@link emptySessionMinigame} when there is no API URL
    * (local/offline mode).
    */
-  offlineMinigame?: () => MinigameSessionResponse["minigame"];
+  offlineMinigame?: () => MinigameSessionResponse["playerEconomy"];
 };
 
 export function createPortalBootstrapMachine({
@@ -74,15 +106,16 @@ export function createPortalBootstrapMachine({
   bootstrapAction,
   offlineMinigame,
 }: PortalBootstrapConfig) {
-  const initialMinigame = offlineMinigame?.() ?? emptySessionMinigame();
+  const initialPlayerEconomy = offlineMinigame?.() ?? emptySessionMinigame();
   return createMachine({
     id: "portalBootstrap",
     initial: "initialising",
     context: {
       id: 0,
       jwt: getJwt() ?? "",
+      portalId: (CONFIG.PORTAL_APP ?? "").trim(),
       farm: { balance: "0" },
-      minigame: initialMinigame,
+      playerEconomy: initialPlayerEconomy,
       actions: {},
     },
     states: {
@@ -102,47 +135,60 @@ export function createPortalBootstrapMachine({
           src: async (context) => {
             if (!getUrl()) {
               const farm = { balance: "0" };
+              const portalId = (CONFIG.PORTAL_APP ?? "").trim();
               return {
                 farm,
-                minigame: offlineMinigame?.() ?? emptySessionMinigame(),
+                playerEconomy: offlineMinigame?.() ?? emptySessionMinigame(),
                 actions: offlineActions,
                 farmId: 0,
+                portalId,
               };
             }
 
-            const { farmId } = decodeToken(context.jwt as string);
-            const portalId = CONFIG.PORTAL_APP;
+            const { farmId, portalId: fromJwt } = decodePortalToken(
+              context.jwt as string,
+            );
+            const portalId =
+              fromJwt ?? (CONFIG.PORTAL_APP ?? "").trim();
+            if (!portalId) {
+              throw new Error(
+                "Portal JWT is missing portalId; re-open the minigame from the game or set VITE_PORTAL_APP.",
+              );
+            }
 
-            const session = await getMinigameSession({
+            const session = await getPlayerEconomySession({
               portalId,
               token: context.jwt as string,
             });
 
-            let minigame = normalizeMinigameFromApi(session.minigame);
+            let playerEconomy = normalizeMinigameFromApi(session.playerEconomy);
             if (bootstrapAction) {
-              minigame = await tryBootstrapAction(
+              playerEconomy = await tryBootstrapAction(
                 portalId,
                 context.jwt as string,
                 bootstrapAction,
-                minigame,
+                playerEconomy,
               );
             }
 
             return {
               farm: session.farm,
-              minigame,
+              playerEconomy,
               actions: session.actions,
               farmId,
+              portalId,
             };
           },
           onDone: {
             target: "sessionReady",
             actions: assign({
               farm: (_c, e: { data: any }) => e.data.farm,
-              minigame: (_c, e: { data: any }) =>
-                normalizeMinigameFromApi(e.data.minigame),
+              playerEconomy: (_c, e: { data: any }) =>
+                normalizeMinigameFromApi(e.data.playerEconomy),
               actions: (_c, e: { data: any }) => e.data.actions,
               id: (_c, e: { data: any }) => e.data.farmId,
+              portalId: (_c, e: { data: { portalId: string } }) =>
+                e.data.portalId,
             }) as any,
           },
           onError: {

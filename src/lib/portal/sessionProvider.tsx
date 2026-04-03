@@ -5,10 +5,9 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { CONFIG } from "lib/config";
 import { getUrl } from "./url";
 import type { MinigameSessionResponse } from "./types";
-import { postMinigameAction } from "./api";
+import { postPlayerEconomyAction } from "./api";
 import type { BootstrapContext } from "./bootstrapMachine";
 import {
   applyOptimisticPortalAction,
@@ -26,7 +25,7 @@ export type MinigameSessionValue = {
   farmId: number;
   jwt: string;
   farm: MinigameSessionResponse["farm"];
-  minigame: MinigameSessionResponse["minigame"];
+  playerEconomy: MinigameSessionResponse["playerEconomy"];
   actions: Record<string, unknown>;
   dispatchAction: (input: DispatchMinigameActionInput) => boolean;
   /**
@@ -58,47 +57,51 @@ export function MinigameSessionProvider({
   bootstrap: BootstrapContext;
   children: React.ReactNode;
 }) {
-  const [minigame, setMinigame] = useState(() =>
-    normalizeMinigameFromApi(bootstrap.minigame),
+  const [playerEconomy, setPlayerEconomy] = useState(() =>
+    normalizeMinigameFromApi(bootstrap.playerEconomy),
   );
   const [apiError, setApiError] = useState<string | null>(null);
 
   const dispatchAction = useCallback(
     (input: DispatchMinigameActionInput): boolean => {
       setApiError(null);
-      const rollback = cloneMinigameSnapshot(minigame);
-      const next = applyOptimisticPortalAction(bootstrap.actions, minigame, {
-        actionId: input.action,
-        amounts: input.amounts,
-        itemId: input.itemId,
-      });
+      const rollback = cloneMinigameSnapshot(playerEconomy);
+      const next = applyOptimisticPortalAction(
+        bootstrap.actions,
+        playerEconomy,
+        {
+          actionId: input.action,
+          amounts: input.amounts,
+          itemId: input.itemId,
+        },
+      );
       if (!next.ok) {
         return false;
       }
-      setMinigame(next.minigame);
+      setPlayerEconomy(next.playerEconomy);
 
       if (!getUrl()) {
         return true;
       }
 
-      void postMinigameAction({
-        portalId: CONFIG.PORTAL_APP,
+      void postPlayerEconomyAction({
+        portalId: bootstrap.portalId,
         token: bootstrap.jwt as string,
         action: input.action,
         amounts: input.amounts,
         itemId: input.itemId,
       }).then(
         (res) => {
-          setMinigame(normalizeMinigameFromApi(res.minigame));
+          setPlayerEconomy(normalizeMinigameFromApi(res.playerEconomy));
         },
         (err) => {
-          setMinigame(rollback);
+          setPlayerEconomy(rollback);
           setApiError(err instanceof Error ? err.message : String(err));
         },
       );
       return true;
     },
-    [bootstrap.actions, bootstrap.jwt, minigame],
+    [bootstrap.actions, bootstrap.jwt, bootstrap.portalId, playerEconomy],
   );
 
   const dispatchMinigameActionsSequential = useCallback(
@@ -107,8 +110,8 @@ export function MinigameSessionProvider({
         return true;
       }
       setApiError(null);
-      const rollback = cloneMinigameSnapshot(minigame);
-      let current = minigame;
+      const rollback = cloneMinigameSnapshot(playerEconomy);
+      let current = playerEconomy;
       let applied = 0;
       for (const input of inputs) {
         const next = applyOptimisticPortalAction(bootstrap.actions, current, {
@@ -119,13 +122,13 @@ export function MinigameSessionProvider({
         if (!next.ok) {
           break;
         }
-        current = next.minigame;
+        current = next.playerEconomy;
         applied += 1;
       }
       if (applied === 0) {
         return false;
       }
-      setMinigame(current);
+      setPlayerEconomy(current);
 
       if (!getUrl()) {
         return true;
@@ -143,25 +146,25 @@ export function MinigameSessionProvider({
             break;
           }
           try {
-            const res = await postMinigameAction({
-              portalId: CONFIG.PORTAL_APP,
+            const res = await postPlayerEconomyAction({
+              portalId: bootstrap.portalId,
               token: bootstrap.jwt as string,
               action: input.action,
               amounts: input.amounts,
               itemId: input.itemId,
             });
-            state = normalizeMinigameFromApi(res.minigame);
+            state = normalizeMinigameFromApi(res.playerEconomy);
           } catch (err) {
-            setMinigame(state);
+            setPlayerEconomy(state);
             setApiError(err instanceof Error ? err.message : String(err));
             return;
           }
         }
-        setMinigame(state);
+        setPlayerEconomy(state);
       })();
       return true;
     },
-    [bootstrap.actions, bootstrap.jwt, minigame],
+    [bootstrap.actions, bootstrap.jwt, bootstrap.portalId, playerEconomy],
   );
 
   const clearApiError = useCallback(() => setApiError(null), []);
@@ -171,7 +174,7 @@ export function MinigameSessionProvider({
       farmId: bootstrap.id,
       jwt: bootstrap.jwt as string,
       farm: bootstrap.farm,
-      minigame,
+      playerEconomy,
       actions: bootstrap.actions,
       dispatchAction,
       dispatchMinigameActionsSequential,
@@ -183,7 +186,7 @@ export function MinigameSessionProvider({
       bootstrap.jwt,
       bootstrap.farm,
       bootstrap.actions,
-      minigame,
+      playerEconomy,
       dispatchAction,
       dispatchMinigameActionsSequential,
       apiError,

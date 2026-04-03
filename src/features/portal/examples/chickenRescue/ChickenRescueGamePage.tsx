@@ -22,6 +22,7 @@ import {
   hasLiveGame,
 } from "./lib/chickenRescueMachine";
 import { useMinigameSession } from "lib/portal";
+import { useChickenRescueActionIds } from "./lib/useChickenRescueActionIds";
 import { GameRunProvider } from "./lib/GameRunContext";
 import { defaultPhaserHandlers } from "./lib/chickenRescuePhaserApi";
 import type { ChickenRescuePhaserApiRef } from "./lib/chickenRescuePhaserApi";
@@ -33,7 +34,8 @@ export const ChickenRescueGamePage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { t } = useAppTranslation();
-  const { minigame, farm, farmId, dispatchAction } = useMinigameSession();
+  const { playerEconomy, farm, farmId, dispatchAction } = useMinigameSession();
+  const actionIds = useChickenRescueActionIds();
 
   const scoreRef = useRef(0);
   const goldenRef = useRef(0);
@@ -48,16 +50,16 @@ export const ChickenRescueGamePage: React.FC = () => {
 
   const runType: ChickenRescueRunType =
     searchParams.get("run") === "advanced" ||
-    ((minigame.balances.ADVANCED_GAME ?? 0) > 0 &&
+    ((playerEconomy.balances.ADVANCED_GAME ?? 0) > 0 &&
       searchParams.get("run") !== "basic")
       ? "advanced"
       : "basic";
 
   useEffect(() => {
-    if (!hasLiveGame(minigame)) {
+    if (!hasLiveGame(playerEconomy)) {
       navigate("/home", { replace: true });
     }
-  }, [minigame, navigate]);
+  }, [playerEconomy, navigate]);
 
   useEffect(() => {
     scoreRef.current = score;
@@ -90,21 +92,32 @@ export const ChickenRescueGamePage: React.FC = () => {
     const final = scoreRef.current;
     const finalGolden = goldenRef.current;
     const isAdvanced = runType === "advanced";
-    const ok = dispatchAction({
-      action: isAdvanced ? "WIN_ADVANCED_GAME" : "WIN",
-      amounts: isAdvanced
-        ? {
-            Chook: chooksForScore(final),
-            GoldenChook: finalGolden,
-          }
-        : { Chook: chooksForScore(final) },
-    });
+    const chooks = chooksForScore(final);
+    const won = chooks > 0 || (isAdvanced && finalGolden > 0);
+    const ok = won
+      ? dispatchAction({
+          action: isAdvanced ? actionIds.winAdvanced : actionIds.winBasic,
+          amounts: isAdvanced
+            ? { "1": chooks, "2": finalGolden }
+            : { "1": chooks },
+        })
+      : dispatchAction({
+          action: isAdvanced ? actionIds.loseAdvanced : actionIds.loseBasic,
+        });
     if (ok) {
       // Stay inside the iframe on /home so the minigame API can finish and the
       // player can start another run. Closing the parent iframe races the save.
       navigate("/home", { replace: true });
     }
-  }, [dispatchAction, navigate, runType]);
+  }, [
+    actionIds.loseAdvanced,
+    actionIds.loseBasic,
+    actionIds.winAdvanced,
+    actionIds.winBasic,
+    dispatchAction,
+    navigate,
+    runType,
+  ]);
 
   const chooksEarned = chooksForScore(score);
 

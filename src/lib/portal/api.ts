@@ -1,7 +1,7 @@
 import type { MinigameSessionResponse, MinigameActionResponse } from "./types";
 import { getUrl } from "./url";
 
-export async function getMinigameSession({
+export async function getPlayerEconomySession({
   portalId,
   token,
 }: {
@@ -13,13 +13,16 @@ export async function getMinigameSession({
     throw new Error("No API URL");
   }
 
-  const response = await window.fetch(`${base}/portal/${portalId}/minigame`, {
-    method: "GET",
-    headers: {
-      "content-type": "application/json;charset=UTF-8",
-      Authorization: `Bearer ${token}`,
+  const response = await window.fetch(
+    `${base}/portal/${portalId}/player-economy`,
+    {
+      method: "GET",
+      headers: {
+        "content-type": "application/json;charset=UTF-8",
+        Authorization: `Bearer ${token}`,
+      },
     },
-  });
+  );
 
   if (response.status >= 400) {
     const text = await response.text();
@@ -29,7 +32,7 @@ export async function getMinigameSession({
   return response.json();
 }
 
-export async function postMinigameAction({
+export async function postPlayerEconomyAction({
   portalId,
   token,
   action,
@@ -48,7 +51,7 @@ export async function postMinigameAction({
   }
 
   const response = await window.fetch(
-    `${base}/portal/${portalId}/minigame/action`,
+    `${base}/portal/${portalId}/player-economy/action`,
     {
       method: "POST",
       headers: {

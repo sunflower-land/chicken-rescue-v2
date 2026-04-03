@@ -15,32 +15,34 @@ import { wormsFromMinigame } from "./lib/chickenRescueMachine";
 import { chickenRescueHomeRootStyle } from "./lib/chickenRescueHomeLayout";
 import { closePortal, useMinigameSession } from "lib/portal";
 import { ChickenRescueHomeHUD } from "./components/ChickenRescueHomeHUD";
+import { useChickenRescueActionIds } from "./lib/useChickenRescueActionIds";
 
 export const ChickenRescueHome: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useAppTranslation();
-  const { minigame, dispatchAction, clearApiError, apiError } =
+  const { playerEconomy, dispatchAction, clearApiError, apiError } =
     useMinigameSession();
+  const actionIds = useChickenRescueActionIds();
 
   const [huntStep, setHuntStep] = useState<"choose" | "confirm">("choose");
   const [pendingRun, setPendingRun] = useState<"basic" | "advanced" | null>(
     null,
   );
 
-  const wormsLeft = wormsFromMinigame(minigame);
-  const chickenFeet = minigame.balances.ChickenFeet ?? 0;
+  const wormsLeft = wormsFromMinigame(playerEconomy);
+  const chickenFeet = playerEconomy.balances["3"] ?? 0;
   const canStartBasic = wormsLeft >= 1;
   const canStartAdvanced = chickenFeet >= 1;
 
   const startBasicRun = () => {
-    const ok = dispatchAction({ action: "START" });
+    const ok = dispatchAction({ action: actionIds.startBasic });
     if (ok) {
       navigate("/game?run=basic");
     }
   };
 
   const startAdvancedRun = () => {
-    const ok = dispatchAction({ action: "START_ADVANCED_GAME" });
+    const ok = dispatchAction({ action: actionIds.startAdvanced });
     if (ok) {
       navigate("/game?run=advanced");
     }

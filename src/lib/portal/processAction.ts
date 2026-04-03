@@ -48,7 +48,7 @@ export type MinigameConfig = {
   actions: Record<string, MinigameActionDefinition>;
 };
 
-export type ProducingEntry = {
+export type GeneratorJob = {
   outputToken: string;
   startedAt: number;
   completesAt: number;
@@ -68,7 +68,7 @@ export type MinigameDailyActivity = {
 
 export type MinigameRuntimeState = {
   balances: Record<string, number>;
-  producing: Record<string, ProducingEntry>;
+  generating: Record<string, GeneratorJob>;
   dailyMinted: DailyMintBucket;
   activity: number;
   dailyActivity: MinigameDailyActivity;
@@ -84,7 +84,7 @@ export type MinigameProcessInput = {
 export type MinigameProcessSuccess = {
   ok: true;
   state: MinigameRuntimeState;
-  producingId?: string;
+  generatorJobId?: string;
 };
 
 export type MinigameProcessFailure = { ok: false; error: string };
@@ -134,8 +134,8 @@ function isFixedMintWithDailyCap(
 function cloneState(state: MinigameRuntimeState): MinigameRuntimeState {
   return {
     balances: { ...state.balances },
-    producing: Object.fromEntries(
-      Object.entries(state.producing).map(([id, entry]) => [id, { ...entry }]),
+    generating: Object.fromEntries(
+      Object.entries(state.generating).map(([id, entry]) => [id, { ...entry }]),
     ),
     dailyMinted: {
       utcDay: state.dailyMinted.utcDay,
@@ -230,20 +230,20 @@ function applyBurns(
 
 function applyProduce(
   balances: Record<string, number>,
-  producing: MinigameRuntimeState["producing"],
+  generating: MinigameRuntimeState["generating"],
   produce: Record<string, ProduceRule> | undefined,
   now: number,
-): { error?: string; producingId?: string } {
+): { error?: string; generatorJobId?: string } {
   if (!produce) return {};
   for (const [outputToken, rule] of Object.entries(produce)) {
-    const activeGlobal = Object.values(producing).filter(
+    const activeGlobal = Object.values(generating).filter(
       (p) => p.outputToken === outputToken,
     ).length;
     if (rule.limit !== undefined && activeGlobal >= rule.limit) {
       return { error: `Production limit reached for ${outputToken}` };
     }
     if (rule.requires !== undefined) {
-      const activeForLane = Object.values(producing).filter(
+      const activeForLane = Object.values(generating).filter(
         (p) =>
           p.outputToken === outputToken && p.requires === rule.requires,
       ).length;
@@ -255,13 +255,13 @@ function applyProduce(
       }
     }
     const id = newProducingId();
-    producing[id] = {
+    generating[id] = {
       outputToken,
       startedAt: now,
       completesAt: now + rule.msToComplete,
       ...(rule.requires !== undefined ? { requires: rule.requires } : {}),
     };
-    return { producingId: id };
+    return { generatorJobId: id };
   }
   return {};
 }
@@ -309,7 +309,7 @@ function applyMint(
 
 function applyCollect(
   balances: Record<string, number>,
-  producing: MinigameRuntimeState["producing"],
+  generating: MinigameRuntimeState["generating"],
   collect: Record<string, CollectRule> | undefined,
   itemId: string | undefined,
   now: number,
@@ -318,7 +318,7 @@ function applyCollect(
   if (!itemId) {
     return "itemId is required for collect";
   }
-  const job = producing[itemId];
+  const job = generating[itemId];
   if (!job) {
     return "Unknown production id";
   }
@@ -335,7 +335,7 @@ function applyCollect(
     }
     balances[token] = getBalance(balances, token) + rule.amount;
   }
-  delete producing[itemId];
+  delete generating[itemId];
   return undefined;
 }
 
@@ -343,7 +343,7 @@ function runPhases(
   def: MinigameActionDefinition,
   input: MinigameProcessInput,
   working: MinigameRuntimeState,
-): { error?: string; producingId?: string } {
+): { error?: string; generatorJobId?: string } {
   const errRequire = applyRequire(working.balances, def.require);
   if (errRequire) return { error: errRequire };
 
@@ -358,7 +358,7 @@ function runPhases(
 
   const prod = applyProduce(
     working.balances,
-    working.producing,
+    working.generating,
     def.produce,
     input.now,
   );
@@ -375,17 +375,17 @@ function runPhases(
 
   const errCollect = applyCollect(
     working.balances,
-    working.producing,
+    working.generating,
     def.collect,
     input.itemId,
     input.now,
   );
   if (errCollect) return { error: errCollect };
 
-  return { producingId: prod.producingId };
+  return { generatorJobId: prod.generatorJobId };
 }
 
-export function processMinigameAction(
+export function processPlayerEconomyAction(
   config: MinigameConfig,
   state: MinigameRuntimeState,
   input: MinigameProcessInput,
@@ -398,23 +398,23 @@ export function processMinigameAction(
   const working = cloneState(state);
   rolloverDailyMintedIfNeeded(working.dailyMinted, input.now);
 
-  const { error, producingId } = runPhases(def, input, working);
+  const { error, generatorJobId } = runPhases(def, input, working);
   if (error) {
     return { ok: false, error };
   }
 
   recordSuccessfulMinigameAction(working, input.now);
 
-  return { ok: true, state: working, producingId };
+  return { ok: true, state: working, generatorJobId };
 }
 
-export function emptyMinigameState(
+export function emptyPlayerEconomyState(
   now: number = Date.now(),
 ): MinigameRuntimeState {
   const day = utcCalendarDay(now);
   return {
     balances: {},
-    producing: {},
+    generating: {},
     dailyMinted: { utcDay: day, minted: {} },
     activity: 0,
     dailyActivity: { date: day, count: 0 },

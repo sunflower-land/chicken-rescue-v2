@@ -1,5 +1,5 @@
 import type { MinigameSessionResponse } from "lib/portal";
-import { emptyMinigameState } from "lib/portal/processAction";
+import { emptyPlayerEconomyState } from "lib/portal/processAction";
 import { runtimeToMinigameSession } from "lib/portal/runtimeHelpers";
 
 /** Must match sunflower-land-api `CHICKEN_RESCUE_BOOTSTRAP_WORMS_JOB_ID`. */
@@ -9,45 +9,46 @@ export const CHICKEN_RESCUE_BOOTSTRAP_WORMS_JOB_ID =
 /** Offline dev: generous balances for local testing (no API). */
 const CHICKEN_RESCUE_OFFLINE_TEST_BALANCE = 1000;
 
+/** Item keys `"0"`…`"8"` match chicken-rescue-v2 economy config. */
 const CHICKEN_RESCUE_OFFLINE_TEST_BALANCE_KEYS = [
-  "Worm",
-  "GoldenNugget",
-  "Chook",
-  "ChickenFeet",
-  "GoldenChook",
+  "4",
+  "0",
+  "1",
+  "3",
+  "2",
   "LIVE_GAME",
   "ADVANCED_GAME",
-  "Wormery_2",
-  "Wormery_3",
-  "Wormery_4",
+  "6",
+  "7",
+  "8",
 ] as const;
 
 export function wormsFromMinigame(
-  minigame: MinigameSessionResponse["minigame"],
+  economy: MinigameSessionResponse["playerEconomy"],
 ): number {
-  return minigame.balances.Worm ?? 0;
+  return economy.balances["4"] ?? 0;
 }
 
 export function wormeriesFromMinigame(
-  minigame: MinigameSessionResponse["minigame"],
+  economy: MinigameSessionResponse["playerEconomy"],
 ): number {
-  return minigame.balances.Wormery ?? 0;
+  return economy.balances["5"] ?? 0;
 }
 
 /** Initial session for offline Chicken Rescue (mirrors server bootstrap). */
 export function createChickenRescueOfflineMinigame(
   now = Date.now(),
-): MinigameSessionResponse["minigame"] {
-  const base = emptyMinigameState(now);
+): MinigameSessionResponse["playerEconomy"] {
+  const base = emptyPlayerEconomyState(now);
   for (const key of CHICKEN_RESCUE_OFFLINE_TEST_BALANCE_KEYS) {
     base.balances[key] = CHICKEN_RESCUE_OFFLINE_TEST_BALANCE;
   }
-  base.balances.Wormery = 1;
-  base.producing[CHICKEN_RESCUE_BOOTSTRAP_WORMS_JOB_ID] = {
-    outputToken: "Worm",
+  base.balances["5"] = 1;
+  base.generating[CHICKEN_RESCUE_BOOTSTRAP_WORMS_JOB_ID] = {
+    outputToken: "4",
     startedAt: now - 1,
     completesAt: now,
-    requires: "Wormery",
+    requires: "5",
   };
   return runtimeToMinigameSession(base);
 }
@@ -61,11 +62,11 @@ export function chooksForScore(score: number): number {
 export const grubsForScore = chooksForScore;
 
 export function hasLiveGame(
-  minigame: MinigameSessionResponse["minigame"],
+  economy: MinigameSessionResponse["playerEconomy"],
 ): boolean {
   return (
-    (minigame.balances.LIVE_GAME ?? 0) > 0 ||
-    (minigame.balances.ADVANCED_GAME ?? 0) > 0
+    (economy.balances.LIVE_GAME ?? 0) > 0 ||
+    (economy.balances.ADVANCED_GAME ?? 0) > 0
   );
 }
 
