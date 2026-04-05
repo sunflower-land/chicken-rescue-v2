@@ -22,7 +22,7 @@ import {
   hasLiveGame,
 } from "./lib/chickenRescueMachine";
 import { useMinigameSession } from "lib/portal";
-import { useChickenRescueActionIds } from "./lib/useChickenRescueActionIds";
+import { useChickenRescueLifecycleDispatch } from "./lib/useChickenRescueLifecycleDispatch";
 import { GameRunProvider } from "./lib/GameRunContext";
 import { defaultPhaserHandlers } from "./lib/chickenRescuePhaserApi";
 import type { ChickenRescuePhaserApiRef } from "./lib/chickenRescuePhaserApi";
@@ -34,8 +34,8 @@ export const ChickenRescueGamePage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { t } = useAppTranslation();
-  const { playerEconomy, farm, farmId, dispatchAction } = useMinigameSession();
-  const actionIds = useChickenRescueActionIds();
+  const { playerEconomy, farm, farmId } = useMinigameSession();
+  const { endRun } = useChickenRescueLifecycleDispatch();
 
   const scoreRef = useRef(0);
   const goldenRef = useRef(0);
@@ -107,24 +107,19 @@ export const ChickenRescueGamePage: React.FC = () => {
     const isAdvanced = runType === "advanced";
     const chooks = chooksForScore(final);
     const won = chooks > 0 || (isAdvanced && finalGolden > 0);
-    const endAction = isAdvanced
-      ? actionIds.gameOverAdvanced
-      : actionIds.gameOverBasic;
-    const ok = dispatchAction({
-      action: endAction,
-      amounts: isAdvanced
-        ? { "1": chooks, "2": finalGolden }
-        : { "1": chooks },
+    const ok = endRun({
+      runType: isAdvanced ? "advanced" : "basic",
+      score: final,
+      goldenCount: finalGolden,
     });
     if (ok) {
       // Stay inside the iframe on /home so the minigame API can finish and the
       // player can start another run. Closing the parent iframe races the save.
       navigate("/home", { replace: true });
     } else {
-      console.error("[ChickenRescue] Continue: dispatchAction returned false", {
+      console.error("[ChickenRescue] Continue: endRun returned false", {
         won,
         runType: isAdvanced ? "advanced" : "basic",
-        actionAttempted: endAction,
         score: final,
         chooksForPayout: chooks,
         goldenCount: finalGolden,
@@ -135,14 +130,7 @@ export const ChickenRescueGamePage: React.FC = () => {
         ADVANCED_GAME: playerEconomy.balances.ADVANCED_GAME,
       });
     }
-  }, [
-    actionIds.gameOverAdvanced,
-    actionIds.gameOverBasic,
-    dispatchAction,
-    navigate,
-    playerEconomy.balances,
-    runType,
-  ]);
+  }, [endRun, navigate, playerEconomy.balances, runType]);
 
   const chooksEarned = chooksForScore(score);
 

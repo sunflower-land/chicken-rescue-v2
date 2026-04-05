@@ -1,3 +1,4 @@
+import { CONFIG } from "lib/config";
 import type { MinigameActionDefinition } from "lib/portal/processAction";
 
 /**
@@ -49,73 +50,72 @@ function isRangedMint(
   );
 }
 
-function noProduceCollect(def: MinigameActionDefinition): boolean {
-  return !def.produce && !def.collect;
+function recordIsEffectivelyEmpty(
+  r: Record<string, unknown> | undefined,
+): boolean {
+  return r == null || Object.keys(r).length === 0;
 }
 
-/** mint LIVE_GAME x1, burn worm `"4"` x1 only */
+/** API/editor may send `{}` for unused produce/collect. */
+function noProduceCollect(def: MinigameActionDefinition): boolean {
+  return (
+    recordIsEffectivelyEmpty(
+      def.produce as Record<string, unknown> | undefined,
+    ) &&
+    recordIsEffectivelyEmpty(
+      def.collect as Record<string, unknown> | undefined,
+    )
+  );
+}
+
+/** mint LIVE_GAME x1, burn worm `"4"` x1 (subset match; extra mint/burn keys allowed). */
 function matchesStartBasic(def: MinigameActionDefinition): boolean {
   if (!noProduceCollect(def)) {
     return false;
   }
   const m = def.mint;
   const b = def.burn;
-  if (!m || !b) {
+  if (!m?.LIVE_GAME || !b?.["4"]) {
     return false;
   }
-  const mk = Object.keys(m);
-  const bk = Object.keys(b);
-  if (mk.length !== 1 || mk[0] !== "LIVE_GAME") {
-    return false;
-  }
-  if (!isFixedAmountMint(m.LIVE_GAME) || m.LIVE_GAME.amount !== 1) {
-    return false;
-  }
-  if (bk.length !== 1 || bk[0] !== "4" || b["4"]?.amount !== 1) {
-    return false;
-  }
-  return true;
+  return (
+    isFixedAmountMint(m.LIVE_GAME) &&
+    m.LIVE_GAME.amount === 1 &&
+    b["4"].amount === 1
+  );
 }
 
-/** ranged mint `"1"`, burn LIVE_GAME x1, no mint `"2"` */
+/** ranged mint `"1"`, burn LIVE_GAME x1, no golden mint `"2"`. */
 function matchesGameOverBasic(def: MinigameActionDefinition): boolean {
   if (!noProduceCollect(def)) {
     return false;
   }
   const m = def.mint;
   const b = def.burn;
-  if (!m || !b || !m["1"] || "2" in m) {
+  if (!m?.["1"] || "2" in m) {
     return false;
   }
-  if (!isRangedMint(m["1"])) {
+  if (!isRangedMint(m["1"]) || !b?.LIVE_GAME) {
     return false;
   }
-  const bk = Object.keys(b);
-  return bk.length === 1 && bk[0] === "LIVE_GAME" && b.LIVE_GAME?.amount === 1;
+  return b.LIVE_GAME.amount === 1;
 }
 
-/** mint ADVANCED_GAME x1, burn `"3"` x1 only */
+/** mint ADVANCED_GAME x1, burn `"3"` x1 */
 function matchesStartAdvanced(def: MinigameActionDefinition): boolean {
   if (!noProduceCollect(def)) {
     return false;
   }
   const m = def.mint;
   const b = def.burn;
-  if (!m || !b) {
+  if (!m?.ADVANCED_GAME || !b?.["3"]) {
     return false;
   }
-  const mk = Object.keys(m);
-  const bk = Object.keys(b);
-  if (mk.length !== 1 || mk[0] !== "ADVANCED_GAME") {
-    return false;
-  }
-  if (!isFixedAmountMint(m.ADVANCED_GAME) || m.ADVANCED_GAME.amount !== 1) {
-    return false;
-  }
-  if (bk.length !== 1 || bk[0] !== "3" || b["3"]?.amount !== 1) {
-    return false;
-  }
-  return true;
+  return (
+    isFixedAmountMint(m.ADVANCED_GAME) &&
+    m.ADVANCED_GAME.amount === 1 &&
+    b["3"].amount === 1
+  );
 }
 
 /** ranged mint `"1"` + `"2"`, burn ADVANCED_GAME x1 */
@@ -125,17 +125,13 @@ function matchesGameOverAdvanced(def: MinigameActionDefinition): boolean {
   }
   const m = def.mint;
   const b = def.burn;
-  if (!m || !b || !m["1"] || !m["2"]) {
+  if (!m?.["1"] || !m?.["2"] || !b?.ADVANCED_GAME) {
     return false;
   }
-  if (!isRangedMint(m["1"]) || !isRangedMint(m["2"])) {
-    return false;
-  }
-  const bk = Object.keys(b);
   return (
-    bk.length === 1 &&
-    bk[0] === "ADVANCED_GAME" &&
-    b.ADVANCED_GAME?.amount === 1
+    isRangedMint(m["1"]) &&
+    isRangedMint(m["2"]) &&
+    b.ADVANCED_GAME.amount === 1
   );
 }
 
@@ -158,6 +154,26 @@ function resolveOne(
   return canonical;
 }
 
+function trimConfigActionId(raw: string | undefined): string | undefined {
+  const t = raw?.trim();
+  return t || undefined;
+}
+
+function pickExistingActionId(
+  actions: Record<string, unknown>,
+  resolved: string,
+  envOverride?: string,
+): string {
+  if (resolved in actions) {
+    return resolved;
+  }
+  const fromEnv = trimConfigActionId(envOverride);
+  if (fromEnv && fromEnv in actions) {
+    return fromEnv;
+  }
+  return resolved;
+}
+
 /**
  * Maps Chicken Rescue run lifecycle actions to the keys present in
  * `MinigameSessionResponse.actions` (semantic or numeric).
@@ -166,21 +182,29 @@ export function resolveChickenRescuePortalActionIds(
   actions: Record<string, unknown>,
 ): ChickenRescuePortalActionIds {
   return {
-    startBasic: resolveOne(actions, DEFAULT_IDS.startBasic, matchesStartBasic),
-    gameOverBasic: resolveOne(
+    startBasic: pickExistingActionId(
       actions,
-      DEFAULT_IDS.gameOverBasic,
-      matchesGameOverBasic,
+      resolveOne(actions, DEFAULT_IDS.startBasic, matchesStartBasic),
+      CONFIG.PORTAL_CR_ACTION_START_BASIC,
     ),
-    startAdvanced: resolveOne(
+    gameOverBasic: pickExistingActionId(
       actions,
-      DEFAULT_IDS.startAdvanced,
-      matchesStartAdvanced,
+      resolveOne(actions, DEFAULT_IDS.gameOverBasic, matchesGameOverBasic),
+      CONFIG.PORTAL_CR_ACTION_GAME_OVER_BASIC,
     ),
-    gameOverAdvanced: resolveOne(
+    startAdvanced: pickExistingActionId(
       actions,
-      DEFAULT_IDS.gameOverAdvanced,
-      matchesGameOverAdvanced,
+      resolveOne(actions, DEFAULT_IDS.startAdvanced, matchesStartAdvanced),
+      CONFIG.PORTAL_CR_ACTION_START_ADVANCED,
+    ),
+    gameOverAdvanced: pickExistingActionId(
+      actions,
+      resolveOne(
+        actions,
+        DEFAULT_IDS.gameOverAdvanced,
+        matchesGameOverAdvanced,
+      ),
+      CONFIG.PORTAL_CR_ACTION_GAME_OVER_ADVANCED,
     ),
   };
 }

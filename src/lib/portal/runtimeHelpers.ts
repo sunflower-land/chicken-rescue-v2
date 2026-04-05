@@ -74,6 +74,30 @@ export function normalizeMinigameFromApi(
   };
 }
 
+const RUN_SESSION_BALANCE_KEYS = ["LIVE_GAME", "ADVANCED_GAME"] as const;
+
+/**
+ * Some portal action responses return a partial `balances` map. If `LIVE_GAME` /
+ * `ADVANCED_GAME` are omitted, keep the values from `prev` so an in-progress run
+ * is not cleared before GAMEOVER.
+ */
+export function mergeMinigameEconomyFromApi(
+  prev: MinigameSessionResponse["playerEconomy"],
+  raw: MinigameSessionResponse["playerEconomy"],
+): MinigameSessionResponse["playerEconomy"] {
+  const next = normalizeMinigameFromApi(raw);
+  const balances = { ...next.balances };
+  for (const key of RUN_SESSION_BALANCE_KEYS) {
+    if (!Object.prototype.hasOwnProperty.call(balances, key)) {
+      const v = prev.balances[key];
+      if (v !== undefined) {
+        balances[key] = v;
+      }
+    }
+  }
+  return { ...next, balances };
+}
+
 export function applyOptimisticPortalAction(
   actions: Record<string, unknown>,
   minigame: MinigameSessionResponse["playerEconomy"],

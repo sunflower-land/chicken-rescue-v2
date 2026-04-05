@@ -16,14 +16,13 @@ import { wormsFromMinigame } from "./lib/chickenRescueMachine";
 import { chickenRescueHomeRootStyle } from "./lib/chickenRescueHomeLayout";
 import { closePortal, useMinigameSession } from "lib/portal";
 import { ChickenRescueHomeHUD } from "./components/ChickenRescueHomeHUD";
-import { useChickenRescueActionIds } from "./lib/useChickenRescueActionIds";
+import { useChickenRescueLifecycleDispatch } from "./lib/useChickenRescueLifecycleDispatch";
 
 export const ChickenRescueHome: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useAppTranslation();
-  const { playerEconomy, dispatchAction, clearApiError, apiError } =
-    useMinigameSession();
-  const actionIds = useChickenRescueActionIds();
+  const { playerEconomy, clearApiError, apiError } = useMinigameSession();
+  const { startBasicRun, startAdvancedRun } = useChickenRescueLifecycleDispatch();
 
   const [huntStep, setHuntStep] = useState<"choose" | "confirm">("choose");
   const [pendingRun, setPendingRun] = useState<"basic" | "advanced" | null>(
@@ -35,8 +34,8 @@ export const ChickenRescueHome: React.FC = () => {
   const canStartBasic = wormsLeft >= 1;
   const canStartAdvanced = chickenFeet >= 1;
 
-  const startBasicRun = () => {
-    const ok = dispatchAction({ action: actionIds.startBasic });
+  const onStartBasicRun = () => {
+    const ok = startBasicRun();
     console.log("[CR-run-debug] startBasicRun after dispatch", { ok });
     if (ok) {
       flushSync(() => {
@@ -45,8 +44,8 @@ export const ChickenRescueHome: React.FC = () => {
     }
   };
 
-  const startAdvancedRun = () => {
-    const ok = dispatchAction({ action: actionIds.startAdvanced });
+  const onStartAdvancedRun = () => {
+    const ok = startAdvancedRun();
     console.log("[CR-run-debug] startAdvancedRun after dispatch", { ok });
     if (ok) {
       flushSync(() => {
@@ -67,11 +66,11 @@ export const ChickenRescueHome: React.FC = () => {
 
   const startConfirmedRun = () => {
     if (pendingRun === "basic") {
-      startBasicRun();
+      onStartBasicRun();
       return;
     }
     if (pendingRun === "advanced") {
-      startAdvancedRun();
+      onStartAdvancedRun();
     }
   };
 

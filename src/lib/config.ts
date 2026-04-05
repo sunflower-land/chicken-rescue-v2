@@ -73,6 +73,15 @@ const GAME_ANALYTICS_PUB_KEY = import.meta.env
   .VITE_GAME_ANALYTICS_PUB_KEY as string;
 const PORTAL_APP = import.meta.env.VITE_PORTAL_APP as string;
 const PORTAL_GAME_URL = import.meta.env.VITE_PORTAL_GAME_URL as string;
+/** Optional: numeric/session action keys when portal defs don’t match shape rules. */
+const PORTAL_CR_ACTION_START_BASIC = import.meta.env
+  .VITE_PORTAL_CR_ACTION_START_BASIC as string | undefined;
+const PORTAL_CR_ACTION_GAME_OVER_BASIC = import.meta.env
+  .VITE_PORTAL_CR_ACTION_GAME_OVER_BASIC as string | undefined;
+const PORTAL_CR_ACTION_START_ADVANCED = import.meta.env
+  .VITE_PORTAL_CR_ACTION_START_ADVANCED as string | undefined;
+const PORTAL_CR_ACTION_GAME_OVER_ADVANCED = import.meta.env
+  .VITE_PORTAL_CR_ACTION_GAME_OVER_ADVANCED as string | undefined;
 
 const DEQUIPPER_CONTRACT = import.meta.env.VITE_DEQUIPPER_CONTRACT as string;
 const SEQUENCE_ACCESS_KEY = import.meta.env.VITE_SEQUENCE_ACCESS_KEY as string;
@@ -138,6 +147,10 @@ export const CONFIG = {
   GAME_ANALYTICS_PUB_KEY,
   PORTAL_APP,
   PORTAL_GAME_URL,
+  PORTAL_CR_ACTION_START_BASIC,
+  PORTAL_CR_ACTION_GAME_OVER_BASIC,
+  PORTAL_CR_ACTION_START_ADVANCED,
+  PORTAL_CR_ACTION_GAME_OVER_ADVANCED,
   SEQUENCE_ACCESS_KEY,
   PORTAL_URL,
   ANIMATION_URL,

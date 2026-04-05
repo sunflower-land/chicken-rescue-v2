@@ -13,10 +13,19 @@ import type { BootstrapContext } from "./bootstrapMachine";
 import {
   applyOptimisticPortalAction,
   cloneMinigameSnapshot,
+  mergeMinigameEconomyFromApi,
   normalizeMinigameFromApi,
 } from "./runtimeHelpers";
 
 export type DispatchMinigameActionInput = {
+  action: string;
+  amounts?: Record<string, number>;
+  itemId?: string;
+};
+
+/** Commit a minigame-owned economy snapshot and sync to the portal API (no processAction). */
+export type CommitLocalPlayerEconomyInput = {
+  nextPlayerEconomy: MinigameSessionResponse["playerEconomy"];
   action: string;
   amounts?: Record<string, number>;
   itemId?: string;
@@ -29,6 +38,13 @@ export type MinigameSessionValue = {
   playerEconomy: MinigameSessionResponse["playerEconomy"];
   actions: Record<string, unknown>;
   dispatchAction: (input: DispatchMinigameActionInput) => boolean;
+  /**
+   * Applies `nextPlayerEconomy` locally and POSTs the action. Does not read
+   * session `actions` / processAction (use for minigames that own transitions).
+   */
+  commitLocalPlayerEconomySync: (
+    input: CommitLocalPlayerEconomyInput,
+  ) => boolean;
   /**
    * Applies actions in order on the updated state after each step. Stops at the
    * first failure and keeps prior successful steps (partial success). Returns
@@ -63,6 +79,69 @@ export function MinigameSessionProvider({
   );
   const [apiError, setApiError] = useState<string | null>(null);
 
+  const runAfterLocalEconomyCommit = useCallback(
+    (
+      rollback: MinigameSessionResponse["playerEconomy"],
+      nextEconomy: MinigameSessionResponse["playerEconomy"],
+      input: {
+        action: string;
+        amounts?: Record<string, number>;
+        itemId?: string;
+      },
+    ) => {
+      flushSync(() => {
+        setPlayerEconomy(nextEconomy);
+      });
+      console.log("[CR-run-debug] local economy committed", {
+        action: input.action,
+        LIVE_GAME: nextEconomy.balances.LIVE_GAME,
+        ADVANCED_GAME: nextEconomy.balances.ADVANCED_GAME,
+      });
+
+      if (!getUrl()) {
+        return;
+      }
+
+      void postPlayerEconomyAction({
+        portalId: bootstrap.portalId,
+        token: bootstrap.jwt as string,
+        action: input.action,
+        amounts: input.amounts,
+        itemId: input.itemId,
+      }      ).then(
+        (res) => {
+          setPlayerEconomy((prev) =>
+            mergeMinigameEconomyFromApi(prev, res.playerEconomy),
+          );
+        },
+        (err) => {
+          const message = err instanceof Error ? err.message : String(err);
+          console.error("[ChickenRescue] portal action API request failed", {
+            action: input.action,
+            amounts: input.amounts,
+            itemId: input.itemId,
+            message,
+            error: err,
+          });
+          setPlayerEconomy(rollback);
+          setApiError(message);
+        },
+      );
+    },
+    [bootstrap.jwt, bootstrap.portalId],
+  );
+
+  const commitLocalPlayerEconomySync = useCallback(
+    (input: CommitLocalPlayerEconomyInput): boolean => {
+      setApiError(null);
+      const rollback = cloneMinigameSnapshot(playerEconomy);
+      const nextEconomy = cloneMinigameSnapshot(input.nextPlayerEconomy);
+      runAfterLocalEconomyCommit(rollback, nextEconomy, input);
+      return true;
+    },
+    [playerEconomy, runAfterLocalEconomyCommit],
+  );
+
   const dispatchAction = useCallback(
     (input: DispatchMinigameActionInput): boolean => {
       setApiError(null);
@@ -77,59 +156,22 @@ export function MinigameSessionProvider({
         },
       );
       if (!next.ok) {
-        console.error("[ChickenRescue] dispatchAction optimistic update failed", {
-          action: input.action,
-          error: next.error,
-          amounts: input.amounts,
-          itemId: input.itemId,
-          configuredActions: Object.keys(bootstrap.actions ?? {}),
-        });
-        return false;
-      }
-      /**
-       * Commit optimistic state before the caller runs `navigate()` in the same
-       * tick. Otherwise the /game route mounts while context still has the
-       * pre-action economy and redirects away (no LIVE_GAME yet).
-       */
-      flushSync(() => {
-        setPlayerEconomy(next.playerEconomy);
-      });
-      console.log("[CR-run-debug] dispatchAction optimistic committed", {
-        action: input.action,
-        LIVE_GAME: next.playerEconomy.balances.LIVE_GAME,
-        ADVANCED_GAME: next.playerEconomy.balances.ADVANCED_GAME,
-      });
-
-      if (!getUrl()) {
-        return true;
-      }
-
-      void postPlayerEconomyAction({
-        portalId: bootstrap.portalId,
-        token: bootstrap.jwt as string,
-        action: input.action,
-        amounts: input.amounts,
-        itemId: input.itemId,
-      }).then(
-        (res) => {
-          setPlayerEconomy(normalizeMinigameFromApi(res.playerEconomy));
-        },
-        (err) => {
-          const message = err instanceof Error ? err.message : String(err);
-          console.error("[ChickenRescue] dispatchAction API request failed", {
+        console.error(
+          "[ChickenRescue] dispatchAction optimistic update failed",
+          {
             action: input.action,
+            error: next.error,
             amounts: input.amounts,
             itemId: input.itemId,
-            message,
-            error: err,
-          });
-          setPlayerEconomy(rollback);
-          setApiError(message);
-        },
-      );
+            configuredActions: Object.keys(bootstrap.actions ?? {}),
+          },
+        );
+        return false;
+      }
+      runAfterLocalEconomyCommit(rollback, next.playerEconomy, input);
       return true;
     },
-    [bootstrap.actions, bootstrap.jwt, bootstrap.portalId, playerEconomy],
+    [bootstrap.actions, playerEconomy, runAfterLocalEconomyCommit],
   );
 
   const dispatchMinigameActionsSequential = useCallback(
@@ -209,7 +251,7 @@ export function MinigameSessionProvider({
               amounts: input.amounts,
               itemId: input.itemId,
             });
-            state = normalizeMinigameFromApi(res.playerEconomy);
+            state = mergeMinigameEconomyFromApi(state, res.playerEconomy);
           } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             console.error(
@@ -244,6 +286,7 @@ export function MinigameSessionProvider({
       playerEconomy,
       actions: bootstrap.actions,
       dispatchAction,
+      commitLocalPlayerEconomySync,
       dispatchMinigameActionsSequential,
       apiError,
       clearApiError,
@@ -255,6 +298,7 @@ export function MinigameSessionProvider({
       bootstrap.actions,
       playerEconomy,
       dispatchAction,
+      commitLocalPlayerEconomySync,
       dispatchMinigameActionsSequential,
       apiError,
       clearApiError,
