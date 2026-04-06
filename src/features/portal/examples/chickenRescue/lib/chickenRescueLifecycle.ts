@@ -55,9 +55,9 @@ export function applyChickenRescueGameOverBasic(
   return { ok: true, playerEconomy: next };
 }
 
+/** Advanced runs pay out golden chooks (`"2"`) only — no normal chooks (`"1"`). */
 export function applyChickenRescueGameOverAdvanced(
   economy: Economy,
-  chooks: number,
   goldenChooks: number,
 ): ApplyResult {
   const next = cloneMinigameSnapshot(economy);
@@ -67,7 +67,6 @@ export function applyChickenRescueGameOverAdvanced(
   } else {
     next.balances.ADVANCED_GAME = 0;
   }
-  next.balances["1"] = (next.balances["1"] ?? 0) + chooks;
   next.balances["2"] = (next.balances["2"] ?? 0) + goldenChooks;
   return { ok: true, playerEconomy: next };
 }

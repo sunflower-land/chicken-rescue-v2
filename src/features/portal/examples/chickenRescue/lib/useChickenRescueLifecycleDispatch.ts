@@ -41,12 +41,10 @@ export function useChickenRescueLifecycleDispatch() {
       score: number;
       goldenCount: number;
     }): boolean => {
-      const chooks = chooksForScore(input.score);
       const isAdvanced = input.runType === "advanced";
       if (isAdvanced) {
         const applied = applyChickenRescueGameOverAdvanced(
           playerEconomy,
-          chooks,
           input.goldenCount,
         );
         if (!applied.ok) {
@@ -54,10 +52,11 @@ export function useChickenRescueLifecycleDispatch() {
         }
         return commitLocalPlayerEconomySync({
           action: actionIds.gameOverAdvanced,
-          amounts: { "1": chooks, "2": input.goldenCount },
+          amounts: { "2": input.goldenCount },
           nextPlayerEconomy: applied.playerEconomy,
         });
       }
+      const chooks = chooksForScore(input.score);
       const applied = applyChickenRescueGameOverBasic(playerEconomy, chooks);
       if (!applied.ok) {
         return false;

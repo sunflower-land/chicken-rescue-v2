@@ -10,7 +10,7 @@ export type ChickenRescuePortalActionIds = {
   /** Basic run end: mint chook count `"1"` (0–100), burn `LIVE_GAME`. */
   gameOverBasic: string;
   startAdvanced: string;
-  /** Advanced run end: mint `"1"` / `"2"` (golden), burn `ADVANCED_GAME`. */
+  /** Advanced run end: mint golden `"2"` (optional normal `"1"` in API), burn `ADVANCED_GAME`. */
   gameOverAdvanced: string;
 };
 
@@ -118,21 +118,23 @@ function matchesStartAdvanced(def: MinigameActionDefinition): boolean {
   );
 }
 
-/** ranged mint `"1"` + `"2"`, burn ADVANCED_GAME x1 */
+/** Ranged mint `"2"` (golden), burn ADVANCED_GAME x1. Optional ranged `"1"` if API still lists it. */
 function matchesGameOverAdvanced(def: MinigameActionDefinition): boolean {
   if (!noProduceCollect(def)) {
     return false;
   }
   const m = def.mint;
   const b = def.burn;
-  if (!m?.["1"] || !m?.["2"] || !b?.ADVANCED_GAME) {
+  if (!m?.["2"] || !b?.ADVANCED_GAME) {
     return false;
   }
-  return (
-    isRangedMint(m["1"]) &&
-    isRangedMint(m["2"]) &&
-    b.ADVANCED_GAME.amount === 1
-  );
+  if (!isRangedMint(m["2"]) || b.ADVANCED_GAME.amount !== 1) {
+    return false;
+  }
+  if (m["1"] !== undefined && !isRangedMint(m["1"])) {
+    return false;
+  }
+  return true;
 }
 
 function resolveOne(

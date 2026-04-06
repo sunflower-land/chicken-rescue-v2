@@ -106,7 +106,7 @@ export const ChickenRescueGamePage: React.FC = () => {
     const finalGolden = goldenRef.current;
     const isAdvanced = runType === "advanced";
     const chooks = chooksForScore(final);
-    const won = chooks > 0 || (isAdvanced && finalGolden > 0);
+    const won = isAdvanced ? finalGolden > 0 : chooks > 0;
     const ok = endRun({
       runType: isAdvanced ? "advanced" : "basic",
       score: final,
@@ -123,9 +123,7 @@ export const ChickenRescueGamePage: React.FC = () => {
         score: final,
         chooksForPayout: chooks,
         goldenCount: finalGolden,
-        amounts: isAdvanced
-          ? { "1": chooks, "2": finalGolden }
-          : { "1": chooks },
+        amounts: isAdvanced ? { "2": finalGolden } : { "1": chooks },
         LIVE_GAME: playerEconomy.balances.LIVE_GAME,
         ADVANCED_GAME: playerEconomy.balances.ADVANCED_GAME,
       });
@@ -163,21 +161,8 @@ export const ChickenRescueGamePage: React.FC = () => {
                 <Label type="default" className="mb-2">
                   {t("minigame.chickenRescue.gameOver")}
                 </Label>
-                <p className="text-sm mb-2 text-[#3e2731]">
-                  {chooksEarned > 0
-                    ? t("minigame.chickenRescue.resultsFoundChooks")
-                    : t("minigame.chickenRescue.resultsNoChooks")}
-                </p>
-                <div className="flex flex-col gap-2 mb-1">
-                  <div className="flex flex-row items-center gap-2">
-                    <Box image={chookIcon} hideCount />
-                    <span className="text-xs text-[#3e2731]">
-                      {t("minigame.chickenRescue.foundChooksLine", {
-                        count: chooksEarned,
-                      })}
-                    </span>
-                  </div>
-                  {runType === "advanced" && (
+                {runType === "advanced" ? (
+                  <div className="flex flex-col gap-2 mb-1">
                     <div className="flex flex-row items-center gap-2">
                       <Box image={goldenChookIcon} hideCount />
                       <span className="text-xs text-[#3e2731]">
@@ -186,8 +171,26 @@ export const ChickenRescueGamePage: React.FC = () => {
                         })}
                       </span>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm mb-2 text-[#3e2731]">
+                      {chooksEarned > 0
+                        ? t("minigame.chickenRescue.resultsFoundChooks")
+                        : t("minigame.chickenRescue.resultsNoChooks")}
+                    </p>
+                    <div className="flex flex-col gap-2 mb-1">
+                      <div className="flex flex-row items-center gap-2">
+                        <Box image={chookIcon} hideCount />
+                        <span className="text-xs text-[#3e2731]">
+                          {t("minigame.chickenRescue.foundChooksLine", {
+                            count: chooksEarned,
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
               <Button className="mt-1 w-full" onClick={onClaim}>
                 {t("continue")}

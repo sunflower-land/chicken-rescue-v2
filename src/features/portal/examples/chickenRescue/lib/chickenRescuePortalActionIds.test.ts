@@ -26,7 +26,6 @@ const CR_PORTAL_ACTION_FIXTURES: Record<string, MinigameActionDefinition> = {
   },
   ADVANCED_GAMEOVER: {
     mint: {
-      "1": { min: 0, max: 100, dailyCap: 1000 },
       "2": { min: 0, max: 3, dailyCap: 300 },
     },
     burn: { ADVANCED_GAME: { amount: 1 } },
